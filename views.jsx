@@ -49,6 +49,7 @@ function TaskCard({ task, store }) {
       <div className="tf-card-meta">
         <span className={'tf-due ' + due.state}><Icon name="clock" size={13} stroke={2} />{due.text}</span>
         <span className="tf-est"><Icon name="sparkle" size={12} stroke={2} />{task.estimate}</span>
+        {task.recurrence && <span className="tf-repeat"><Icon name="repeat" size={12} stroke={2} />{recurLabel(task.recurrence)}</span>}
         {task.requiresApproval && <ProofTag proof={task.proof} />}
       </div>
 
@@ -183,6 +184,7 @@ function MyTasksView({ store }) {
 
   return (
     <div className="tf-my">
+      <PersonalTasks store={store} />
       <div className="tf-my-stats">
         <Stat n={active.length} label="In progress" tone="progress" />
         <Stat n={assigned.length} label="Assigned to you" tone="open" />
@@ -227,8 +229,21 @@ function ManagerView({ store }) {
   tasks.forEach(t => t.activity.forEach(a => feed.push({ ...a, task: t })));
   feed.sort((a, b) => new Date(b.at) - new Date(a.at));
 
+  const total = tasks.length;
+  const completionRate = total ? Math.round(doneToday.length / total * 100) : 0;
+  const dist = [
+    { k: 'open', label: 'Open', n: open.length, cls: 'open' },
+    { k: 'wip', label: 'In progress', n: wip.length, cls: 'progress' },
+    { k: 'review', label: 'Needs review', n: review.length, cls: 'review' },
+    { k: 'done', label: 'Completed', n: doneToday.length, cls: 'done' },
+  ];
+  const maxDone = Math.max(1, ...board.map(b => b.done));
+
   return (
     <div className="tf-mgr">
+      <div className="tf-mgr-bar">
+        <Button size="sm" variant="default" icon="download" onClick={() => exportCSV(tasks)}>Export CSV</Button>
+      </div>
       <div className="tf-mgr-stats">
         <Stat n={open.length} label="Open & unclaimed" tone="open" />
         <Stat n={wip.length} label="In progress" tone="progress" />
@@ -238,6 +253,43 @@ function ManagerView({ store }) {
       </div>
 
       <div className="tf-mgr-grid">
+        <div className="tf-panel tf-panel-wide tf-analytics">
+          <h2><Icon name="chart" size={16} stroke={2} />This workspace at a glance</h2>
+          <div className="tf-analytics-row">
+            <div className="tf-donut-wrap">
+              <div className="tf-donut" style={{ background: `conic-gradient(var(--done) 0 ${completionRate}%, var(--border) ${completionRate}% 100%)` }}>
+                <div className="tf-donut-hole"><b>{completionRate}%</b><span>done</span></div>
+              </div>
+            </div>
+            <div className="tf-dist">
+              {dist.map(d => (
+                <div key={d.k} className="tf-dist-row">
+                  <span className="tf-dist-label">{d.label}</span>
+                  <div className="tf-dist-track"><div className={'tf-dist-fill ' + d.cls} style={{ width: (total ? d.n / total * 100 : 0) + '%' }}></div></div>
+                  <b className="tf-dist-n">{d.n}</b>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="tf-panel tf-panel-wide">
+          <h2>Completed by person</h2>
+          {board.filter(b => b.done).length === 0 ? (
+            <p className="tf-my-empty">No completed work yet.</p>
+          ) : (
+            <div className="tf-bars">
+              {board.filter(b => b.done).map(({ u, done }) => (
+                <div key={u.id} className="tf-bar-row">
+                  <div className="tf-bar-who"><Avatar user={u} size={24} /><span>{u.name.split(' ')[0]}</span></div>
+                  <div className="tf-bar-track"><div className="tf-bar-fill" style={{ width: (done / maxDone * 100) + '%' }}></div></div>
+                  <b className="tf-bar-n">{done}</b>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="tf-panel">
           <h2>Waiting for your approval</h2>
           {review.length ? review.map(t => {
@@ -306,6 +358,33 @@ function activityVerb(type) {
     created: 'created', claimed: 'claimed', completed: 'submitted', approved: 'approved', reopened: 'reopened', commented: 'commented on', edited: 'edited',
   })[type] || type;
 }
+
+function recurLabel(r) {
+  return ({ daily: 'Repeats daily', weekly: 'Repeats weekly', monthly: 'Repeats monthly' })[r] || '';
+}
+window.recurLabel = recurLabel;
+
+function exportCSV(tasks) {
+  const name = (id) => { const u = userById(id); return u ? u.name : ''; };
+  const fmt = (d) => d ? new Date(d).toLocaleString('en-US') : '';
+  const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const cols = ['Task', 'Department', 'Priority', 'Status', 'Repeats', 'Created by', 'Created', 'Due',
+    'Claimed by', 'Claimed', 'Completed by', 'Completed', 'Approved by', 'Completion note'];
+  const rows = tasks.map(t => [
+    t.title, t.dept, t.priority, (window.STATUS_META[t.status] || {}).label || t.status, t.recurrence || '',
+    name(t.createdBy), fmt(t.createdAt), fmt(t.due),
+    name(t.claimedBy), fmt(t.claimedAt), name(t.completedBy), fmt(t.completedAt),
+    name(t.approvedBy), t.completionNote || '',
+  ]);
+  const csv = [cols, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'taskflow-activity-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+}
+window.exportCSV = exportCSV;
 
 Object.assign(window, {
   TaskCard, BoardView, ListView, MyTasksView, ManagerView, Stat, taskAction, activityVerb,

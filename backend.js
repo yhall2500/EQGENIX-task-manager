@@ -43,10 +43,10 @@
         c.activity = (c.activity || []).map(x => ({ ...x, at: x.at instanceof Date ? x.at.toISOString() : x.at }));
         return c;
       });
-      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, invites: [], messages: [], sessionUserId: null, seeded: true };
+      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, invites: [], messages: [], personal: [], notifications: [], sessionUserId: null, seeded: true };
     }
     function read() {
-      try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; return d; } } catch (e) {}
+      try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; if (!d.personal) d.personal = []; if (!d.notifications) d.notifications = []; return d; } } catch (e) {}
       const db = fresh(); write(db); return db;
     }
     function write(db) { try { localStorage.setItem(LKEY, JSON.stringify(db)); } catch (e) {} }
@@ -111,6 +111,49 @@
         const db = read(); const m = { id: rid('m_'), userId: db.sessionUserId, body: text, at: new Date().toISOString() };
         db.messages.push(m); write(db); return Promise.resolve({ ...m, at: new Date(m.at) });
       },
+      listPersonal() {
+        const db = read();
+        return Promise.resolve((db.personal || []).filter(p => p.owner === db.sessionUserId)
+          .map(p => ({ ...p, due: p.due ? new Date(p.due) : null })));
+      },
+      addPersonal({ title, due }) {
+        const db = read();
+        const p = { id: rid('p_'), owner: db.sessionUserId, title, done: false, due: due ? new Date(due).toISOString() : null, at: new Date().toISOString() };
+        db.personal.push(p); write(db);
+        return Promise.resolve({ ...p, due: p.due ? new Date(p.due) : null });
+      },
+      setPersonalDone(id, done) {
+        const db = read(); const p = db.personal.find(x => x.id === id);
+        if (p) { p.done = done; write(db); } return Promise.resolve(true);
+      },
+      deletePersonal(id) {
+        const db = read(); db.personal = db.personal.filter(x => x.id !== id); write(db);
+        return Promise.resolve(true);
+      },
+      listNotifications() {
+        const db = read();
+        return Promise.resolve((db.notifications || []).filter(n => n.recipient === db.sessionUserId)
+          .sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 40)
+          .map(n => ({ ...n, at: new Date(n.at) })));
+      },
+      notify({ recipient, kind, text, taskId }) {
+        const db = read();
+        db.notifications.push({ id: rid('n_'), recipient, kind, text, taskId: taskId || null, read: false, at: new Date().toISOString() });
+        write(db); return Promise.resolve(true);
+      },
+      markNotificationsRead() {
+        const db = read();
+        db.notifications.forEach(n => { if (n.recipient === db.sessionUserId) n.read = true; });
+        write(db); return Promise.resolve(true);
+      },
+      uploadProof(file) {
+        return new Promise((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(fr.result); // data URL works offline
+          fr.onerror = () => rej(new Error('Could not read the file'));
+          fr.readAsDataURL(file);
+        });
+      },
     };
     return api;
   })();
@@ -134,17 +177,17 @@
     // map db row (snake_case) → app task shape (camelCase)
     const fromRow = (r) => reviveTask({
       id: r.id, title: r.title, desc: r.description, dept: r.dept, priority: r.priority, estimate: r.estimate,
-      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to,
+      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to, recurrence: r.recurrence,
       createdBy: r.created_by, createdAt: r.created_at, claimedBy: r.claimed_by, claimedAt: r.claimed_at,
       completedBy: r.completed_by, completedAt: r.completed_at, approvedBy: r.approved_by, approvedAt: r.approved_at,
-      completionNote: r.completion_note, comments: r.comments || [], activity: r.activity || [],
+      completionNote: r.completion_note, proofUrl: r.proof_url, comments: r.comments || [], activity: r.activity || [],
     });
     // map app patch → db columns
     const toRow = (d) => {
       const m = { title: 'title', desc: 'description', dept: 'dept', priority: 'priority', estimate: 'estimate',
-        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to',
+        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to', recurrence: 'recurrence',
         claimedBy: 'claimed_by', claimedAt: 'claimed_at', completedBy: 'completed_by', completedAt: 'completed_at',
-        approvedBy: 'approved_by', approvedAt: 'approved_at', completionNote: 'completion_note', comments: 'comments', activity: 'activity' };
+        approvedBy: 'approved_by', approvedAt: 'approved_at', completionNote: 'completion_note', proofUrl: 'proof_url', comments: 'comments', activity: 'activity' };
       const out = {};
       Object.keys(d).forEach(k => { if (m[k]) { let v = d[k]; if (v instanceof Date) v = v.toISOString();
         if (Array.isArray(v)) v = v.map(x => x.at instanceof Date ? { ...x, at: x.at.toISOString() } : x); out[m[k]] = v; } });
@@ -215,6 +258,45 @@
         if (error) throw new Error(error.message);
         return { id: data.id, userId: data.user_id, body: data.body, at: new Date(data.created_at) };
       },
+      async listPersonal() {
+        const { data: { user } } = await sb.auth.getUser();
+        const { data, error } = await sb.from('personal_tasks').select('*').eq('owner', user.id).order('created_at', { ascending: true });
+        if (error) throw new Error(error.message);
+        return (data || []).map(p => ({ id: p.id, title: p.title, done: p.done, due: p.due ? new Date(p.due) : null }));
+      },
+      async addPersonal({ title, due }) {
+        const { data: { user } } = await sb.auth.getUser();
+        const { data, error } = await sb.from('personal_tasks').insert({ owner: user.id, title, due: due ? new Date(due).toISOString() : null }).select().single();
+        if (error) throw new Error(error.message);
+        return { id: data.id, title: data.title, done: data.done, due: data.due ? new Date(data.due) : null };
+      },
+      async setPersonalDone(id, done) { const { error } = await sb.from('personal_tasks').update({ done }).eq('id', id); if (error) throw new Error(error.message); return true; },
+      async deletePersonal(id) { const { error } = await sb.from('personal_tasks').delete().eq('id', id); if (error) throw new Error(error.message); return true; },
+      async listNotifications() {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return [];
+        const { data, error } = await sb.from('notifications').select('*').eq('recipient', user.id).order('created_at', { ascending: false }).limit(40);
+        if (error) throw new Error(error.message);
+        return (data || []).map(n => ({ id: n.id, kind: n.kind, text: n.text, taskId: n.task_id, read: n.read, at: new Date(n.created_at) }));
+      },
+      async notify({ recipient, kind, text, taskId }) {
+        const { error } = await sb.from('notifications').insert({ recipient, kind, text, task_id: taskId || null });
+        if (error) throw new Error(error.message); return true;
+      },
+      async markNotificationsRead() {
+        const { data: { user } } = await sb.auth.getUser();
+        const { error } = await sb.from('notifications').update({ read: true }).eq('recipient', user.id).eq('read', false);
+        if (error) throw new Error(error.message); return true;
+      },
+      async uploadProof(file) {
+        const { data: { user } } = await sb.auth.getUser();
+        const ext = ((file.name || 'file').split('.').pop() || 'dat').toLowerCase();
+        const path = user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+        const { error } = await sb.storage.from('proofs').upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (error) throw new Error(error.message);
+        const { data } = sb.storage.from('proofs').getPublicUrl(path);
+        return data.publicUrl;
+      },
     };
   })();
 
@@ -247,6 +329,14 @@
     deleteTask(id) { return impl.deleteTask(id); },
     listMessages() { return impl.listMessages(); },
     sendMessage(text) { return impl.sendMessage(text); },
+    listPersonal() { return impl.listPersonal(); },
+    addPersonal(args) { return impl.addPersonal(args); },
+    setPersonalDone(id, done) { return impl.setPersonalDone(id, done); },
+    deletePersonal(id) { return impl.deletePersonal(id); },
+    listNotifications() { return impl.listNotifications(); },
+    notify(args) { return impl.notify(args); },
+    markNotificationsRead() { return impl.markNotificationsRead(); },
+    uploadProof(file) { return impl.uploadProof(file); },
     inviteLink(token) {
       const base = location.origin + location.pathname;
       return base + '?invite=' + encodeURIComponent(token);

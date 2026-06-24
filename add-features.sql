@@ -31,6 +31,55 @@ create policy "tasks_delete" on public.tasks for delete to authenticated
 -- ---------- 2b. Assign a task to a specific teammate ----------
 alter table public.tasks add column if not exists assigned_to uuid references auth.users;
 
+-- ---------- 2d. Recurring tasks ----------
+alter table public.tasks add column if not exists recurrence text;
+
+-- ---------- 2f. Completion proof file (photo / file URL) ----------
+alter table public.tasks add column if not exists proof_url text;
+
+-- Storage bucket for uploaded proof photos/files
+insert into storage.buckets (id, name, public) values ('proofs', 'proofs', true)
+  on conflict (id) do nothing;
+drop policy if exists "proofs_read"   on storage.objects;
+drop policy if exists "proofs_upload" on storage.objects;
+create policy "proofs_read"   on storage.objects for select using (bucket_id = 'proofs');
+create policy "proofs_upload" on storage.objects for insert to authenticated with check (bucket_id = 'proofs');
+
+-- ---------- 2e. Cross-user notifications ----------
+create table if not exists public.notifications (
+  id          uuid primary key default gen_random_uuid(),
+  recipient   uuid not null references auth.users on delete cascade,
+  kind        text not null,
+  text        text not null,
+  task_id     uuid,
+  read        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+alter table public.notifications enable row level security;
+grant select, insert, update on public.notifications to authenticated;
+drop policy if exists "notifications_read"   on public.notifications;
+drop policy if exists "notifications_insert" on public.notifications;
+drop policy if exists "notifications_update" on public.notifications;
+-- you can read & update only your own; any teammate may create one addressed to you
+create policy "notifications_read"   on public.notifications for select to authenticated using (recipient = auth.uid());
+create policy "notifications_insert" on public.notifications for insert to authenticated with check (true);
+create policy "notifications_update" on public.notifications for update to authenticated using (recipient = auth.uid());
+
+-- ---------- 2c. Private personal to-do list (owner-only) ----------
+create table if not exists public.personal_tasks (
+  id          uuid primary key default gen_random_uuid(),
+  owner       uuid not null references auth.users on delete cascade,
+  title       text not null,
+  done        boolean not null default false,
+  due         timestamptz,
+  created_at  timestamptz not null default now()
+);
+alter table public.personal_tasks enable row level security;
+grant select, insert, update, delete on public.personal_tasks to authenticated;
+drop policy if exists "personal_all" on public.personal_tasks;
+create policy "personal_all" on public.personal_tasks for all to authenticated
+  using (owner = auth.uid()) with check (owner = auth.uid());
+
 -- ---------- 3. Managers can change anyone's role ----------
 drop policy if exists "profiles_manager_update" on public.profiles;
 create policy "profiles_manager_update" on public.profiles for update to authenticated

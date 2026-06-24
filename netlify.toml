@@ -1,5 +1,11 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
+
+# Don't rewrite function calls to the SPA
+[[redirects]]
+  from = "/.netlify/functions/*"
+  status = 200
 
 # Single-page app: send unknown paths to index.html (real files still served directly)
 [[redirects]]

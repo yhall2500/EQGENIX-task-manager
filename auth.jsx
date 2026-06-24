@@ -211,7 +211,19 @@ function InviteModal({ store, onClose }) {
     try {
       const inv = await Backend.createInvite({ email, role });
       const url = Backend.inviteLink(inv.token);
-      setLink({ url, email: inv.email, role: inv.role });
+      let emailed = false;
+      // try the optional Netlify function that emails the link; silently fall back if not deployed
+      if (IS_LIVE()) {
+        try {
+          const r = await fetch('/.netlify/functions/send-invite', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: inv.email, link: url, inviter: store.me.name, workspace: store.appName, role: inv.role }),
+          });
+          emailed = r.ok;
+        } catch (e) {/* fall back to link */}
+      }
+      setLink({ url, email: inv.email, role: inv.role, emailed });
+      if (emailed) store.flash && store.flash(`Invite emailed to ${inv.email}`, 'mail');
       setEmail(''); setRole('member'); refresh();
     } catch (e) { store.flash && store.flash(e.message || 'Could not create invite', 'clock', 'review'); }
     finally { setBusy(false); }
@@ -248,14 +260,14 @@ function InviteModal({ store, onClose }) {
 
           {link && (
             <div className="tf-invite-link">
-              <div className="tf-invite-link-head"><Icon name="link" size={15} stroke={2} />Invite link for <b>{link.email}</b></div>
+              <div className="tf-invite-link-head"><Icon name={link.emailed ? 'mail' : 'link'} size={15} stroke={2} />{link.emailed ? <>Emailed to <b>{link.email}</b> ✓</> : <>Invite link for <b>{link.email}</b></>}</div>
               <div className="tf-invite-link-row">
                 <input readOnly value={link.url} onFocus={e => e.target.select()} />
                 <button className="tf-btn default sm" onClick={() => copy(link.url)}>{copied ? 'Copied!' : 'Copy'}</button>
               </div>
               <div className="tf-invite-link-acts">
                 <a className="tf-btn ghost sm" href={mailto(link.email, link.url)}><Icon name="mail" size={15} stroke={2} />Email it</a>
-                <span className="tf-invite-fine">{IS_LIVE() ? 'Send this link to your teammate — they set their own password.' : 'Demo: open this link in a new tab to accept.'}</span>
+                <span className="tf-invite-fine">{link.emailed ? 'We emailed them the link — you can also copy it here as a backup.' : IS_LIVE() ? 'Send this link to your teammate — they set their own password.' : 'Demo: open this link in a new tab to accept.'}</span>
               </div>
             </div>
           )}

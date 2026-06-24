@@ -28,10 +28,9 @@ function TeamView({ store }) {
           const done = tasks.filter(t => t.completedBy === u.id && t.status === 'completed').length;
           const isMe = u.id === me.id;
           return (
-            <div key={u.id} className="tf-member-card">
-              <button className="tf-member-open" onClick={() => store.openMember(u.id)} title={`See what ${u.name.split(' ')[0]} is working on`}>
-                <Icon name="chevron" size={16} />
-              </button>
+            <div key={u.id} className="tf-member-card clickable" onClick={() => store.openMember(u.id)}
+              title={`See what ${u.name.split(' ')[0]} is working on`}>
+              <div className="tf-member-open"><span className="tf-member-open-label">View</span><Icon name="chevron" size={16} /></div>
               <div className="tf-member-top">
                 <Avatar user={u} size={48} />
                 <div className="tf-member-id">
@@ -48,7 +47,7 @@ function TeamView({ store }) {
                 <div><b>{done}</b><span>Completed</span></div>
               </div>
               {isManager && !isMe && (
-                <div className="tf-member-acts">
+                <div className="tf-member-acts" onClick={e => e.stopPropagation()}>
                   {u.role === 'manager'
                     ? <Button size="sm" variant="ghost" icon="user" onClick={() => store.setRole(u.id, 'member')}>Make member</Button>
                     : <Button size="sm" variant="default" icon="shield" onClick={() => store.setRole(u.id, 'manager')}>Make manager</Button>}
@@ -257,4 +256,85 @@ function MemberModal({ store, uid, onClose }) {
   );
 }
 
-Object.assign(window, { TeamView, ChatView, MemberModal });
+/* ---------------- Personal tasks (private to-do list) ---------------- */
+function PersonalTasks({ store }) {
+  const [items, setItems] = useState(null); // null = loading
+  const [title, setTitle] = useState('');
+  const [due, setDue] = useState('');
+  const [adding, setAdding] = useState(false);
+
+  const load = async () => { try { setItems(await Backend.listPersonal()); } catch (e) { setItems([]); } };
+  useEffect(() => { load(); }, []);
+
+  const add = async () => {
+    const t = title.trim();
+    if (!t || adding) return;
+    setAdding(true); setTitle(''); const d = due; setDue('');
+    const optimistic = { id: 'tmp_' + Date.now(), title: t, done: false, due: d ? new Date(d) : null, pending: true };
+    setItems(list => [...(list || []), optimistic]);
+    try { await Backend.addPersonal({ title: t, due: d || null }); await load(); }
+    catch (e) { store.flash(e.message || 'Could not add', 'clock', 'review'); }
+    finally { setAdding(false); }
+  };
+  const toggle = async (it) => {
+    setItems(list => list.map(x => x.id === it.id ? { ...x, done: !x.done } : x));
+    try { await Backend.setPersonalDone(it.id, !it.done); } catch (e) { load(); }
+  };
+  const remove = async (it) => {
+    setItems(list => list.filter(x => x.id !== it.id));
+    try { await Backend.deletePersonal(it.id); } catch (e) { load(); }
+  };
+
+  const open = (items || []).filter(x => !x.done);
+  const done = (items || []).filter(x => x.done);
+
+  return (
+    <div className="tf-personal">
+      <div className="tf-personal-head">
+        <div className="tf-personal-title">
+          <Icon name="user" size={16} stroke={2} />
+          <h2>Personal to-dos</h2>
+          <span className="tf-private-tag"><Icon name="shield" size={12} stroke={2} />Private to you</span>
+        </div>
+        <p>Your own reminders — never posted to the team board or seen by anyone else.</p>
+      </div>
+
+      <div className="tf-personal-add">
+        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Add a private to-do…"
+          onKeyDown={e => e.key === 'Enter' && add()} />
+        <input type="date" className="tf-personal-date" value={due} onChange={e => setDue(e.target.value)} title="Optional due date" />
+        <button className="tf-btn primary sm" disabled={!title.trim() || adding} onClick={add}><Icon name="plus" size={15} stroke={2.2} />Add</button>
+      </div>
+
+      <div className="tf-personal-list">
+        {items === null ? (
+          <div className="tf-personal-loading"><span className="tf-spinner dark"></span></div>
+        ) : items.length === 0 ? (
+          <p className="tf-personal-empty">Nothing here yet. Add a private reminder above.</p>
+        ) : (
+          <>
+            {open.map(it => <PersonalRow key={it.id} it={it} toggle={toggle} remove={remove} />)}
+            {done.length > 0 && <div className="tf-personal-divider">Done ({done.length})</div>}
+            {done.map(it => <PersonalRow key={it.id} it={it} toggle={toggle} remove={remove} />)}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PersonalRow({ it, toggle, remove }) {
+  const due = it.due ? dueLabel(it.due) : null;
+  return (
+    <div className={'tf-personal-row' + (it.done ? ' done' : '') + (it.pending ? ' pending' : '')}>
+      <button className={'tf-checkbox round' + (it.done ? ' on' : '')} onClick={() => toggle(it)}>
+        {it.done && <Icon name="check" size={12} stroke={3} />}
+      </button>
+      <span className="tf-personal-text">{it.title}</span>
+      {due && !it.done && <span className={'tf-personal-due ' + due.state}><Icon name="clock" size={12} stroke={2} />{due.text}</span>}
+      <button className="tf-personal-del" title="Delete" onClick={() => remove(it)}><Icon name="trash" size={15} /></button>
+    </div>
+  );
+}
+
+Object.assign(window, { TeamView, ChatView, MemberModal, PersonalTasks });

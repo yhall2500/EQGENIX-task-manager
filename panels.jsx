@@ -26,7 +26,7 @@ function CreateModal({ store }) {
   const [f, setF] = useState({
     title: '', desc: '', dept: D.DEPARTMENTS[0], priority: 'medium',
     estimate: '1 hr', due: '2026-06-24', dueTime: '17:00',
-    proof: 'note', requiresApproval: false, assignedTo: '',
+    proof: 'note', requiresApproval: false, assignedTo: '', recurrence: 'none',
   });
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
@@ -40,6 +40,7 @@ function CreateModal({ store }) {
       due: new Date(`${f.due}T${f.dueTime}`),
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
+      recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
 
@@ -120,6 +121,18 @@ function CreateModal({ store }) {
             <Icon name="chevronDown" size={15} />
           </div>
         </label>
+        <label className="tf-field full">
+          <span>Repeats</span>
+          <div className="tf-select">
+            <select value={f.recurrence} onChange={e => set('recurrence', e.target.value)}>
+              <option value="none">Doesn’t repeat</option>
+              <option value="daily">Every day</option>
+              <option value="weekly">Every week</option>
+              <option value="monthly">Every month</option>
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
 
         <label className="tf-check full" onClick={() => set('requiresApproval', !f.requiresApproval)}>
           <span className={'tf-checkbox' + (f.requiresApproval ? ' on' : '')}>{f.requiresApproval && <Icon name="check" size={13} stroke={3} />}</span>
@@ -148,7 +161,7 @@ function EditModal({ store }) {
     title: task.title, desc: task.desc === 'No description provided.' ? '' : task.desc,
     dept: task.dept, priority: task.priority, estimate: task.estimate,
     due: toDateStr(task.due), dueTime: toTimeStr(task.due),
-    proof: task.proof, requiresApproval: !!task.requiresApproval, assignedTo: task.assignedTo || '',
+    proof: task.proof, requiresApproval: !!task.requiresApproval, assignedTo: task.assignedTo || '', recurrence: task.recurrence || 'none',
   }));
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
@@ -162,6 +175,7 @@ function EditModal({ store }) {
       due: f.due ? new Date(`${f.due}T${f.dueTime || '17:00'}`) : null,
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
+      recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
 
@@ -240,6 +254,18 @@ function EditModal({ store }) {
             <Icon name="chevronDown" size={15} />
           </div>
         </label>
+        <label className="tf-field full">
+          <span>Repeats</span>
+          <div className="tf-select">
+            <select value={f.recurrence} onChange={e => set('recurrence', e.target.value)}>
+              <option value="none">Doesn’t repeat</option>
+              <option value="daily">Every day</option>
+              <option value="weekly">Every week</option>
+              <option value="monthly">Every month</option>
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
 
         <label className="tf-check full" onClick={() => set('requiresApproval', !f.requiresApproval)}>
           <span className={'tf-checkbox' + (f.requiresApproval ? ' on' : '')}>{f.requiresApproval && <Icon name="check" size={13} stroke={3} />}</span>
@@ -263,11 +289,26 @@ function CompleteModal({ store }) {
   const task = store.tasks.find(t => t.id === store.completeId);
   const [note, setNote] = useState('');
   const [checked, setChecked] = useState(false);
+  const [proofUrl, setProofUrl] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef();
   if (!task) return null;
   const needsProof = task.proof;
   const proofReady = needsProof === 'note' ? note.trim().length > 0
     : needsProof === 'checklist' ? checked
-    : checked; // photo/file simulated by an "attached" toggle
+    : !!proofUrl; // photo/file need a real upload
+
+  const pick = () => fileRef.current && fileRef.current.click();
+  const onFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setUploading(true); setFileName(file.name);
+    try { const url = await Backend.uploadProof(file); setProofUrl(url); }
+    catch (err) { store.flash(err.message || 'Upload failed', 'clock', 'review'); setFileName(''); }
+    finally { setUploading(false); }
+  };
+  const clearFile = () => { setProofUrl(null); setFileName(''); if (fileRef.current) fileRef.current.value = ''; };
 
   const proofCopy = {
     note: 'Add a short completion note',
@@ -295,11 +336,28 @@ function CompleteModal({ store }) {
               placeholder="What did you do? Anything the next person should know?" />
           )}
           {(task.proof === 'photo' || task.proof === 'file') && (
-            <button type="button" className={'tf-drop' + (checked ? ' on' : '')} onClick={() => setChecked(c => !c)}>
-              <Icon name={task.proof === 'photo' ? 'camera' : 'paperclip'} size={22} />
-              {checked ? <span><b>{task.proof === 'photo' ? 'photo.jpg' : 'final-file.pdf'}</b> attached · click to remove</span>
-                       : <span>Click to attach {task.proof === 'photo' ? 'a photo' : 'a file'}</span>}
-            </button>
+            <>
+              <input ref={fileRef} type="file" accept={task.proof === 'photo' ? 'image/*' : undefined}
+                onChange={onFile} style={{ display: 'none' }} />
+              {!proofUrl ? (
+                <button type="button" className={'tf-drop' + (uploading ? ' busy' : '')} onClick={pick} disabled={uploading}>
+                  {uploading
+                    ? <><span className="tf-spinner dark"></span><span>Uploading {fileName}…</span></>
+                    : <><Icon name={task.proof === 'photo' ? 'camera' : 'paperclip'} size={22} /><span>Click to attach {task.proof === 'photo' ? 'a photo' : 'a file'}</span></>}
+                </button>
+              ) : task.proof === 'photo' ? (
+                <div className="tf-proof-preview">
+                  <img src={proofUrl} alt="proof" />
+                  <button type="button" className="tf-proof-clear" onClick={clearFile}><Icon name="x" size={14} />Remove</button>
+                </div>
+              ) : (
+                <div className="tf-drop on">
+                  <Icon name="paperclip" size={20} />
+                  <span><b>{fileName}</b> attached</span>
+                  <button type="button" className="tf-proof-clear inline" onClick={clearFile}><Icon name="x" size={14} /></button>
+                </div>
+              )}
+            </>
           )}
           {task.proof === 'checklist' && (
             <button type="button" className={'tf-checkrow' + (checked ? ' on' : '')} onClick={() => setChecked(c => !c)}>
@@ -322,8 +380,8 @@ function CompleteModal({ store }) {
         <span className="tf-foot-note">Logged as <b>you</b>, {new Date(window.TASKFLOW_DATA.NOW).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' })}</span>
         <div className="tf-foot-acts">
           <Button variant="ghost" onClick={store.closeModals}>Cancel</Button>
-          <Button variant="primary" icon="check" disabled={!proofReady}
-            onClick={() => store.complete(task.id, note.trim())}>
+          <Button variant="primary" icon="check" disabled={!proofReady || uploading}
+            onClick={() => store.complete(task.id, note.trim(), proofUrl)}>
             {task.requiresApproval ? 'Submit for review' : 'Complete task'}
           </Button>
         </div>
@@ -401,8 +459,14 @@ function TaskDetail({ store }) {
               <div className="tf-proof-card">
                 <div className="tf-proof-card-head"><ProofTag proof={task.proof} /><span>Submitted by {userById(task.completedBy)?.name.split(' ')[0]} · {relTime(task.completedAt)}</span></div>
                 <p>{task.completionNote}</p>
-                {(task.proof === 'photo' || task.proof === 'file') && (
-                  <div className="tf-proof-file"><Icon name={task.proof === 'photo' ? 'camera' : 'paperclip'} size={15} />{task.proof === 'photo' ? 'completion-photo.jpg' : 'completed-file.pdf'}</div>
+                {task.proofUrl && task.proof === 'photo' && (
+                  <a className="tf-proof-img" href={task.proofUrl} target="_blank" rel="noopener"><img src={task.proofUrl} alt="completion proof" /></a>
+                )}
+                {task.proofUrl && task.proof !== 'photo' && (
+                  <a className="tf-proof-file" href={task.proofUrl} target="_blank" rel="noopener"><Icon name="paperclip" size={15} />View attached file</a>
+                )}
+                {!task.proofUrl && (task.proof === 'photo' || task.proof === 'file') && (
+                  <div className="tf-proof-file muted"><Icon name={task.proof === 'photo' ? 'camera' : 'paperclip'} size={15} />No file attached</div>
                 )}
               </div>
             </section>
@@ -492,6 +556,7 @@ function TaskDetail({ store }) {
 function NotifPanel({ store, onClose }) {
   const me = store.me;
   const items = store.notifications;
+  const ICONS = { claim: 'hand', review: 'checkCircle', done: 'check', approved: 'checkCircle', reopened: 'undo', comment: 'chat', assign: 'user', overdue: 'clock', new: 'plus' };
   return (
     <>
       <div className="tf-pop-scrim" onClick={onClose}></div>
@@ -502,7 +567,7 @@ function NotifPanel({ store, onClose }) {
           {items.map((n) => (
             <div key={n.id} className={'tf-notif-row' + (n.read ? '' : ' unread')}
               onClick={() => { if (n.taskId) store.openDetail(n.taskId); onClose(); }}>
-              <div className={'tf-notif-ic ' + n.kind}><Icon name={n.icon} size={15} stroke={2} /></div>
+              <div className={'tf-notif-ic ' + n.kind}><Icon name={ICONS[n.kind] || 'bell'} size={15} stroke={2} /></div>
               <div className="tf-notif-text"><p>{n.text}</p><span>{relTime(n.at)}</span></div>
               {!n.read && <span className="tf-notif-dot"></span>}
             </div>

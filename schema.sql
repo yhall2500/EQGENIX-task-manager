@@ -40,6 +40,7 @@ create table if not exists public.tasks (
   requires_approval boolean default false,
   proof             text,
   assigned_to       uuid references auth.users,
+  recurrence        text,
   created_by        uuid references auth.users,
   created_at        timestamptz not null default now(),
   claimed_by        uuid references auth.users,
@@ -49,6 +50,7 @@ create table if not exists public.tasks (
   approved_by       uuid references auth.users,
   approved_at       timestamptz,
   completion_note   text,
+  proof_url         text,
   comments          jsonb not null default '[]'::jsonb,
   activity          jsonb not null default '[]'::jsonb
 );
@@ -57,6 +59,25 @@ create table if not exists public.messages (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid references auth.users on delete set null,
   body        text not null,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.personal_tasks (
+  id          uuid primary key default gen_random_uuid(),
+  owner       uuid not null references auth.users on delete cascade,
+  title       text not null,
+  done        boolean not null default false,
+  due         timestamptz,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.notifications (
+  id          uuid primary key default gen_random_uuid(),
+  recipient   uuid not null references auth.users on delete cascade,
+  kind        text not null,
+  text        text not null,
+  task_id     uuid,
+  read        boolean not null default false,
   created_at  timestamptz not null default now()
 );
 
@@ -112,6 +133,8 @@ alter table public.profiles enable row level security;
 alter table public.tasks    enable row level security;
 alter table public.invites  enable row level security;
 alter table public.messages enable row level security;
+alter table public.personal_tasks enable row level security;
+alter table public.notifications enable row level security;
 
 -- table-level privileges (RLS still controls which rows are visible)
 grant usage on schema public to anon, authenticated;
@@ -119,6 +142,8 @@ grant select, insert, update, delete on public.profiles to authenticated;
 grant select, insert, update, delete on public.tasks    to authenticated;
 grant select, insert, update, delete on public.invites  to authenticated;
 grant select, insert on public.messages to authenticated;
+grant select, insert, update, delete on public.personal_tasks to authenticated;
+grant select, insert, update on public.notifications to authenticated;
 alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;
 
@@ -150,6 +175,19 @@ drop policy if exists "messages_read"   on public.messages;
 drop policy if exists "messages_insert" on public.messages;
 create policy "messages_read"   on public.messages for select to authenticated using (true);
 create policy "messages_insert" on public.messages for insert to authenticated with check (user_id = auth.uid());
+
+-- personal tasks: fully private to their owner
+drop policy if exists "personal_all" on public.personal_tasks;
+create policy "personal_all" on public.personal_tasks for all to authenticated
+  using (owner = auth.uid()) with check (owner = auth.uid());
+
+-- notifications: read/update your own; anyone may create one addressed to you
+drop policy if exists "notifications_read"   on public.notifications;
+drop policy if exists "notifications_insert" on public.notifications;
+drop policy if exists "notifications_update" on public.notifications;
+create policy "notifications_read"   on public.notifications for select to authenticated using (recipient = auth.uid());
+create policy "notifications_insert" on public.notifications for insert to authenticated with check (true);
+create policy "notifications_update" on public.notifications for update to authenticated using (recipient = auth.uid());
 
 -- invites: only managers can create / see / change them (accept screen uses get_invite())
 drop policy if exists "invites_read"   on public.invites;

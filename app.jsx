@@ -48,7 +48,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [view, setView] = useState('board');
   const [layout, setLayout] = useState('board');
-  const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false });
+  const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false, priority: 'All', assignee: 'All' });
   const [detailId, setDetailId] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -82,10 +82,18 @@ function App() {
       } catch (e) {setPhase(inviteToken ? 'invite' : 'auth');}
     })();}, []);
 
+  // poll for new notifications addressed to me
+  useEffect(() => {
+    if (phase !== 'ready') return;
+    const iv = setInterval(() => { Backend.listNotifications().then(setNotifs).catch(() => {}); }, 15000);
+    return () => clearInterval(iv);
+  }, [phase, meId]);
+
   async function loadWorkspace(u) {
     const [mem, tks] = await Promise.all([Backend.listMembers(), Backend.listTasks()]);
     window.TASKFLOW_DATA.USERS = mem;
-    setMembers(mem);setMeId(u.id);setTasks(tks);setNotifs(buildNotifs(tks, u));
+    setMembers(mem);setMeId(u.id);setTasks(tks);
+    Backend.listNotifications().then(setNotifs).catch(() => setNotifs([]));
   }
 
   const onAuthed = async (u) => {
@@ -105,7 +113,15 @@ function App() {
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
   const onErr = (e) => flash(e && e.message || 'Couldn’t save — check your connection', 'clock', 'review');
-  const pushNotif = (n) => setNotifs((list) => [{ id: nid(), at: Date.now(), read: false, ...n }, ...list]);
+  // send a notification to another teammate (never to myself)
+  const notify = (recipient, kind, text, taskId) => {
+    if (!recipient || recipient === meId) return;
+    Backend.notify({ recipient, kind, text, taskId }).catch(() => {});
+  };
+  const notifyManagers = (kind, text, taskId, exceptId) => {
+    members.forEach((u) => { if (u.role === 'manager' && u.id !== meId && u.id !== exceptId) notify(u.id, kind, text, taskId); });
+  };
+  const refreshNotifs = () => Backend.listNotifications().then(setNotifs).catch(() => {});
   const truncate = (s) => s.length > 26 ? s.slice(0, 24) + '…' : s;
 
   // ---- early returns (after all hooks) ----
@@ -123,6 +139,25 @@ function App() {
     Backend.updateTask(id, persist).catch(onErr);
   };
 
+  // spawn the next occurrence of a recurring task once it's done
+  const spawnRecurrence = async (cur) => {
+    const base = cur.due ? new Date(cur.due) : new Date();
+    const next = new Date(base);
+    if (cur.recurrence === 'daily') next.setDate(next.getDate() + 1);
+    else if (cur.recurrence === 'weekly') next.setDate(next.getDate() + 7);
+    else if (cur.recurrence === 'monthly') next.setMonth(next.getMonth() + 1);
+    try {
+      const task = await Backend.createTask({
+        title: cur.title, desc: cur.desc, dept: cur.dept, priority: cur.priority,
+        estimate: cur.estimate, due: next, proof: cur.proof,
+        requiresApproval: cur.requiresApproval, assignedTo: cur.assignedTo || null,
+        recurrence: cur.recurrence,
+      });
+      setTasks((list) => [task, ...list]);
+      flash(`Next “${truncate(cur.title)}” scheduled for ${next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'undo', 'open');
+    } catch (e) {/* non-fatal */}
+  };
+
   const store = {
     me, tasks, members, appName: t.appName, copy: { claimVerb: t.claimVerb },
     notifications: notifs, flash,
@@ -134,19 +169,23 @@ function App() {
       patchTask(id, { ...cur, status: 'in_progress', claimedBy: meId, claimedAt: at, activity },
       { status: 'in_progress', claimedBy: meId, claimedAt: at, activity });
       flash(`Claimed “${truncate(cur.title)}” — it’s yours`, 'hand');
-      pushNotif({ kind: 'claim', text: `You claimed “${cur.title}”`, taskId: id });
+      notify(cur.createdBy, 'claim', `${me.name.split(' ')[0]} claimed “${cur.title}”`, id);
     },
     openComplete(id) {setCompleteId(id);},
-    complete(id, note) {
+    complete(id, note, proofUrl) {
       const cur = tasks.find((x) => x.id === id);if (!cur) return;
       const review = cur.requiresApproval;const at = new Date();
       const activity = [...cur.activity, { type: 'completed', by: meId, at }];
-      const nx = { ...cur, completedBy: meId, completedAt: at, completionNote: note || 'Marked complete.',
+      const nx = { ...cur, completedBy: meId, completedAt: at, completionNote: note || 'Marked complete.', proofUrl: proofUrl || null,
         status: review ? 'pending_approval' : 'completed', activity };
-      patchTask(id, nx, { completedBy: meId, completedAt: at, completionNote: nx.completionNote, status: nx.status, activity });
+      patchTask(id, nx, { completedBy: meId, completedAt: at, completionNote: nx.completionNote, proofUrl: proofUrl || null, status: nx.status, activity });
       setCompleteId(null);
-      if (review) {flash('Submitted for review ✦', 'checkCircle', 'review');pushNotif({ kind: 'review', text: `You submitted “${cur.title}” for review`, taskId: id });} else
-      {flash(`Completed “${truncate(cur.title)}” 🎉`, 'check');pushNotif({ kind: 'done', text: `You completed “${cur.title}”`, taskId: id });}
+      if (review) {flash('Submitted for review ✦', 'checkCircle', 'review');
+        notify(cur.createdBy, 'review', `${me.name.split(' ')[0]} submitted “${cur.title}” for review`, id);
+        notifyManagers('review', `${me.name.split(' ')[0]} submitted “${cur.title}” for review`, id, cur.createdBy);} else
+      {flash(`Completed “${truncate(cur.title)}” 🎉`, 'check');
+      notify(cur.createdBy, 'done', `${me.name.split(' ')[0]} completed “${cur.title}”`, id);
+      if (cur.recurrence) spawnRecurrence(cur);}
     },
     approve(id) {
       if (me.role !== 'manager') {flash('Only managers can approve work', 'clock', 'review');return;}
@@ -156,6 +195,8 @@ function App() {
       patchTask(id, { ...cur, status: 'completed', approvedBy: meId, approvedAt: at, activity },
       { status: 'completed', approvedBy: meId, approvedAt: at, activity });
       flash(`Approved — logged to ${(userById(cur.completedBy) || me).name.split(' ')[0]}`, 'checkCircle');
+      notify(cur.completedBy, 'approved', `Your work on “${cur.title}” was approved ✓`, id);
+      if (cur.recurrence) spawnRecurrence(cur);
     },
     reject(id) {
       if (me.role !== 'manager') {flash('Only managers can review work', 'clock', 'review');return;}
@@ -165,11 +206,16 @@ function App() {
       patchTask(id, { ...cur, status: 'in_progress', completedBy: null, completedAt: null, completionNote: null, activity },
       { status: 'in_progress', completedBy: null, completedAt: null, completionNote: null, activity });
       flash('Sent back for changes', 'undo', 'review');
+      notify(cur.completedBy, 'reopened', `“${cur.title}” was sent back for changes`, id);
     },
     comment(id, text) {
       const cur = tasks.find((x) => x.id === id);if (!cur) return;
       const comments = [...cur.comments, { by: meId, at: new Date(), text }];
       patchTask(id, { ...cur, comments }, { comments });
+      const seen = new Set([meId]);
+      [cur.createdBy, cur.claimedBy, cur.completedBy, cur.assignedTo].forEach((uid) => {
+        if (uid && !seen.has(uid)) { seen.add(uid); notify(uid, 'comment', `${me.name.split(' ')[0]} commented on “${cur.title}”`, id); }
+      });
     },
     async createTask(data) {
       try {
@@ -177,7 +223,7 @@ function App() {
         setTasks((list) => [task, ...list]);
         setCreateOpen(false);
         flash(`Posted “${truncate(task.title)}” to the board`, 'plus');
-        pushNotif({ kind: 'new', text: `You posted “${task.title}”`, taskId: task.id });
+        if (data.assignedTo) notify(data.assignedTo, 'assign', `${me.name.split(' ')[0]} assigned you “${task.title}”`, task.id);
       } catch (e) {onErr(e);}
     },
     editTask(id, data) {
@@ -186,6 +232,7 @@ function App() {
       patchTask(id, { ...cur, ...data, activity }, { ...data, activity });
       setEditId(null);
       flash(`Updated “${truncate(data.title || cur.title)}”`, 'edit');
+      if (data.assignedTo && data.assignedTo !== cur.assignedTo) notify(data.assignedTo, 'assign', `${me.name.split(' ')[0]} assigned you “${data.title || cur.title}”`, id);
     },
     async deleteTask(id) {
       const cur = tasks.find((x) => x.id === id);
@@ -218,7 +265,7 @@ function App() {
     openInvite() {setInviteOpen(true);},
     openMember(uid) {setMemberId(uid);},
     closeModals() {setCreateOpen(false);setCompleteId(null);setEditId(null);},
-    clearNotifs() {setNotifs((list) => list.map((n) => ({ ...n, read: true })));},
+    clearNotifs() {setNotifs((list) => list.map((n) => ({ ...n, read: true })));Backend.markNotificationsRead().catch(() => {});},
 
     completeId, detailId, editId,
     get filtered() {
@@ -226,7 +273,9 @@ function App() {
       const q = filters.q.trim().toLowerCase();
       if (q) list = list.filter((x) => (x.title + ' ' + x.desc + ' ' + x.dept).toLowerCase().includes(q));
       if (filters.dept !== 'All') list = list.filter((x) => x.dept === filters.dept);
-      if (filters.mine) list = list.filter((x) => x.claimedBy === meId || x.completedBy === meId);
+      if (filters.priority !== 'All') list = list.filter((x) => x.priority === filters.priority);
+      if (filters.assignee !== 'All') list = list.filter((x) => x.assignedTo === filters.assignee || x.claimedBy === filters.assignee);
+      if (filters.mine) list = list.filter((x) => x.claimedBy === meId || x.completedBy === meId || x.assignedTo === meId);
       return list;
     }
   };
@@ -313,6 +362,23 @@ function App() {
               <select value={filters.dept} onChange={(e) => setFilters((f) => ({ ...f, dept: e.target.value }))}>
                 <option>All</option>
                 {D.DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
+              </select>
+              <Icon name="chevronDown" size={14} />
+            </div>
+            <div className="tf-select sm">
+              <select value={filters.priority} onChange={(e) => setFilters((f) => ({ ...f, priority: e.target.value }))}>
+                <option value="All">Any priority</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <Icon name="chevronDown" size={14} />
+            </div>
+            <div className="tf-select sm">
+              <select value={filters.assignee} onChange={(e) => setFilters((f) => ({ ...f, assignee: e.target.value }))}>
+                <option value="All">Anyone</option>
+                {members.map((u) => <option key={u.id} value={u.id}>{u.name.split(' ')[0]}</option>)}
               </select>
               <Icon name="chevronDown" size={14} />
             </div>
