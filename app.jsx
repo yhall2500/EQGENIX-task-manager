@@ -51,8 +51,10 @@ function App() {
   const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false });
   const [detailId, setDetailId] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [completeId, setCompleteId] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [memberId, setMemberId] = useState(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -178,6 +180,28 @@ function App() {
         pushNotif({ kind: 'new', text: `You posted “${task.title}”`, taskId: task.id });
       } catch (e) {onErr(e);}
     },
+    editTask(id, data) {
+      const cur = tasks.find((x) => x.id === id);if (!cur) return;
+      const activity = [...cur.activity, { type: 'edited', by: meId, at: new Date() }];
+      patchTask(id, { ...cur, ...data, activity }, { ...data, activity });
+      setEditId(null);
+      flash(`Updated “${truncate(data.title || cur.title)}”`, 'edit');
+    },
+    async deleteTask(id) {
+      const cur = tasks.find((x) => x.id === id);
+      setTasks((list) => list.filter((x) => x.id !== id));
+      setDetailId(null);setEditId(null);
+      try {await Backend.deleteTask(id);flash(`Deleted “${truncate(cur && cur.title || 'task')}”`, 'trash', 'review');}
+      catch (e) {onErr(e);}
+    },
+    async setRole(uid, role) {
+      const who = (members.find((x) => x.id === uid) || {}).name || 'Member';
+      setMembers((list) => list.map((x) => x.id === uid ? { ...x, role } : x));
+      window.TASKFLOW_DATA.USERS = window.TASKFLOW_DATA.USERS.map((x) => x.id === uid ? { ...x, role } : x);
+      setRev((r) => r + 1);
+      try {await Backend.setRole(uid, role);flash(`${who.split(' ')[0]} is now a ${role === 'manager' ? 'Manager' : 'Member'}`, role === 'manager' ? 'shield' : 'user');}
+      catch (e) {onErr(e);}
+    },
     async updateProfile(patch) {
       const m = members.find((x) => x.id === meId);
       const next = { ...m, ...patch };
@@ -190,10 +214,13 @@ function App() {
     openDetail(id) {setDetailId(id);setNotifOpen(false);setProfileOpen(false);},
     closeDetail() {setDetailId(null);},
     openCreate() {setCreateOpen(true);},
-    closeModals() {setCreateOpen(false);setCompleteId(null);},
+    openEdit(id) {setDetailId(null);setEditId(id);},
+    openInvite() {setInviteOpen(true);},
+    openMember(uid) {setMemberId(uid);},
+    closeModals() {setCreateOpen(false);setCompleteId(null);setEditId(null);},
     clearNotifs() {setNotifs((list) => list.map((n) => ({ ...n, read: true })));},
 
-    completeId, detailId,
+    completeId, detailId, editId,
     get filtered() {
       let list = tasks;
       const q = filters.q.trim().toLowerCase();
@@ -209,7 +236,9 @@ function App() {
   const NAV = [
   { key: 'board', label: t.boardTitle, icon: 'board' },
   { key: 'mine', label: 'My tasks', icon: 'user' },
-  { key: 'manager', label: 'Team & activity', icon: 'users' }];
+  { key: 'team', label: 'Team', icon: 'users' },
+  { key: 'manager', label: 'Overview', icon: 'board' },
+  { key: 'chat', label: 'Chat', icon: 'chat' }];
 
 
   return (
@@ -315,16 +344,25 @@ function App() {
         }
         {view === 'manager' &&
         <>
-            <ViewHeader title="Team &amp; activity" sub="Who’s doing what, what’s overdue, and what’s waiting on a manager." />
+            <ViewHeader title="Overview" sub="Who’s doing what, what’s overdue, and what’s waiting on a manager." />
             <ManagerView store={store} />
           </>
         }
+        {view === 'team' &&
+        <>
+            <ViewHeader title="Team" sub="Everyone in your workspace, what they’re working on, and their role." />
+            <TeamView store={store} />
+          </>
+        }
+        {view === 'chat' && <ChatView store={store} />}
       </main>
 
       {createOpen && <CreateModal store={store} />}
+      {editId && <EditModal store={store} />}
       {completeId && <CompleteModal store={store} />}
       {detailId && <TaskDetail store={store} />}
       {profileOpen && <ProfileModal store={store} onClose={() => setProfileOpen(false)} onLogout={logout} />}
+      {memberId && <MemberModal store={store} uid={memberId} onClose={() => setMemberId(null)} />}
       {inviteOpen && <InviteModal store={store} onClose={() => setInviteOpen(false)} />}
       <Toast toast={toast} />
 

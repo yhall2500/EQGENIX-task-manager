@@ -43,10 +43,10 @@
         c.activity = (c.activity || []).map(x => ({ ...x, at: x.at instanceof Date ? x.at.toISOString() : x.at }));
         return c;
       });
-      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, invites: [], sessionUserId: null, seeded: true };
+      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, invites: [], messages: [], sessionUserId: null, seeded: true };
     }
     function read() {
-      try { const r = localStorage.getItem(LKEY); if (r) return JSON.parse(r); } catch (e) {}
+      try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; return d; } } catch (e) {}
       const db = fresh(); write(db); return db;
     }
     function write(db) { try { localStorage.setItem(LKEY, JSON.stringify(db)); } catch (e) {} }
@@ -101,6 +101,16 @@
       },
       listInvites() { return Promise.resolve(read().invites.filter(i => !i.accepted)); },
       getInvite(token) { return Promise.resolve(read().invites.find(i => i.token === token) || null); },
+      setRole(uid, role) {
+        const db = read(); const m = db.members.find(x => x.id === uid);
+        if (m) { m.role = role; write(db); } return Promise.resolve(pub(m));
+      },
+      deleteTask(id) { const db = read(); db.tasks = db.tasks.filter(x => x.id !== id); write(db); return Promise.resolve(true); },
+      listMessages() { const db = read(); return Promise.resolve((db.messages || []).map(m => ({ ...m, at: new Date(m.at) }))); },
+      sendMessage(text) {
+        const db = read(); const m = { id: rid('m_'), userId: db.sessionUserId, body: text, at: new Date().toISOString() };
+        db.messages.push(m); write(db); return Promise.resolve({ ...m, at: new Date(m.at) });
+      },
     };
     return api;
   })();
@@ -124,7 +134,7 @@
     // map db row (snake_case) → app task shape (camelCase)
     const fromRow = (r) => reviveTask({
       id: r.id, title: r.title, desc: r.description, dept: r.dept, priority: r.priority, estimate: r.estimate,
-      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof,
+      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to,
       createdBy: r.created_by, createdAt: r.created_at, claimedBy: r.claimed_by, claimedAt: r.claimed_at,
       completedBy: r.completed_by, completedAt: r.completed_at, approvedBy: r.approved_by, approvedAt: r.approved_at,
       completionNote: r.completion_note, comments: r.comments || [], activity: r.activity || [],
@@ -132,7 +142,7 @@
     // map app patch → db columns
     const toRow = (d) => {
       const m = { title: 'title', desc: 'description', dept: 'dept', priority: 'priority', estimate: 'estimate',
-        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof',
+        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to',
         claimedBy: 'claimed_by', claimedAt: 'claimed_at', completedBy: 'completed_by', completedAt: 'completed_at',
         approvedBy: 'approved_by', approvedAt: 'approved_at', completionNote: 'completion_note', comments: 'comments', activity: 'activity' };
       const out = {};
@@ -189,6 +199,22 @@
       },
       async listInvites() { const { data } = await sb.from('invites').select('*').eq('accepted', false).order('created_at', { ascending: false }); return data || []; },
       async getInvite(token) { const { data } = await sb.rpc('get_invite', { t: token }); return (data && data[0]) || null; },
+      async setRole(uid, role) {
+        const { data, error } = await sb.from('profiles').update({ role }).eq('id', uid).select().single();
+        if (error) throw new Error(error.message); return pubFromProfile(data);
+      },
+      async deleteTask(id) { const { error } = await sb.from('tasks').delete().eq('id', id); if (error) throw new Error(error.message); return true; },
+      async listMessages() {
+        const { data, error } = await sb.from('messages').select('*').order('created_at', { ascending: true }).limit(300);
+        if (error) throw new Error(error.message);
+        return (data || []).map(m => ({ id: m.id, userId: m.user_id, body: m.body, at: new Date(m.created_at) }));
+      },
+      async sendMessage(text) {
+        const { data: { user } } = await sb.auth.getUser();
+        const { data, error } = await sb.from('messages').insert({ user_id: user.id, body: text }).select().single();
+        if (error) throw new Error(error.message);
+        return { id: data.id, userId: data.user_id, body: data.body, at: new Date(data.created_at) };
+      },
     };
   })();
 
@@ -217,6 +243,10 @@
     createInvite(args) { return impl.createInvite(args); },
     listInvites() { return impl.listInvites(); },
     getInvite(token) { return impl.getInvite(token); },
+    setRole(uid, role) { return impl.setRole(uid, role); },
+    deleteTask(id) { return impl.deleteTask(id); },
+    listMessages() { return impl.listMessages(); },
+    sendMessage(text) { return impl.sendMessage(text); },
     inviteLink(token) {
       const base = location.origin + location.pathname;
       return base + '?invite=' + encodeURIComponent(token);

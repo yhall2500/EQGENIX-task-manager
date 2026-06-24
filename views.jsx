@@ -26,6 +26,7 @@ function TaskCard({ task, store }) {
   const due = dueLabel(task.due);
   const claimer = userById(task.claimedBy);
   const doer = userById(task.completedBy);
+  const assignee = task.assignedTo ? userById(task.assignedTo) : null;
   const overdue = due.state === 'overdue' && task.status !== 'completed';
 
   const onAction = (e) => {
@@ -57,6 +58,8 @@ function TaskCard({ task, store }) {
             doer ? <><Avatar user={doer} size={24} /><span className="tf-who-label">{task.status === 'completed' ? 'Done by' : 'Submitted by'} <b>{doer.name.split(' ')[0]}</b></span></> : null
           ) : claimer ? (
             <><Avatar user={claimer} size={24} /><span className="tf-who-label">Claimed by <b>{claimer.id === me.id ? 'you' : claimer.name.split(' ')[0]}</b></span></>
+          ) : assignee ? (
+            <><Avatar user={assignee} size={24} /><span className="tf-who-label">For <b>{assignee.id === me.id ? 'you' : assignee.name.split(' ')[0]}</b></span></>
           ) : (
             <span className="tf-who-label muted"><Icon name="users" size={14} stroke={2} />Open to the team</span>
           )}
@@ -167,6 +170,7 @@ function MyTasksView({ store }) {
   const review = mine.filter(t => t.status === 'pending_approval');
   const done = mine.filter(t => t.status === 'completed');
   const dueToday = active.filter(t => dueLabel(t.due).state !== 'ok');
+  const assigned = store.tasks.filter(t => t.assignedTo === me.id && t.status === 'open');
 
   const Section = ({ title, items, empty }) => (
     <div className="tf-my-section">
@@ -181,10 +185,12 @@ function MyTasksView({ store }) {
     <div className="tf-my">
       <div className="tf-my-stats">
         <Stat n={active.length} label="In progress" tone="progress" />
+        <Stat n={assigned.length} label="Assigned to you" tone="open" />
         <Stat n={dueToday.length} label="Due soon / overdue" tone="overdue" />
         <Stat n={review.length} label="Awaiting review" tone="review" />
         <Stat n={done.length} label="Completed" tone="done" />
       </div>
+      {assigned.length > 0 && <Section title="Assigned to you — not started" items={assigned} empty="" />}
       <Section title="Working on now" items={active} empty="You haven’t claimed anything yet — grab a task from the board." />
       {review.length > 0 && <Section title="Submitted, awaiting review" items={review} empty="" />}
       <Section title="Your completed work" items={done} empty="Completed tasks you finish will be logged here." />
@@ -297,7 +303,7 @@ function ManagerView({ store }) {
 
 function activityVerb(type) {
   return ({
-    created: 'created', claimed: 'claimed', completed: 'submitted', approved: 'approved', reopened: 'reopened', commented: 'commented on',
+    created: 'created', claimed: 'claimed', completed: 'submitted', approved: 'approved', reopened: 'reopened', commented: 'commented on', edited: 'edited',
   })[type] || type;
 }
 

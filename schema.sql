@@ -39,6 +39,7 @@ create table if not exists public.tasks (
                     check (status in ('open','in_progress','pending_approval','completed')),
   requires_approval boolean default false,
   proof             text,
+  assigned_to       uuid references auth.users,
   created_by        uuid references auth.users,
   created_at        timestamptz not null default now(),
   claimed_by        uuid references auth.users,
@@ -50,6 +51,13 @@ create table if not exists public.tasks (
   completion_note   text,
   comments          jsonb not null default '[]'::jsonb,
   activity          jsonb not null default '[]'::jsonb
+);
+
+create table if not exists public.messages (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references auth.users on delete set null,
+  body        text not null,
+  created_at  timestamptz not null default now()
 );
 
 -- ---------- helpers ----------
@@ -103,12 +111,14 @@ create trigger on_auth_user_created
 alter table public.profiles enable row level security;
 alter table public.tasks    enable row level security;
 alter table public.invites  enable row level security;
+alter table public.messages enable row level security;
 
 -- table-level privileges (RLS still controls which rows are visible)
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on public.profiles to authenticated;
 grant select, insert, update, delete on public.tasks    to authenticated;
 grant select, insert, update, delete on public.invites  to authenticated;
+grant select, insert on public.messages to authenticated;
 alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;
 
@@ -118,6 +128,10 @@ drop policy if exists "profiles_update" on public.profiles;
 create policy "profiles_read"   on public.profiles for select to authenticated using (true);
 create policy "profiles_update" on public.profiles for update to authenticated using (id = auth.uid());
 
+-- managers can change anyone's role
+drop policy if exists "profiles_manager_update" on public.profiles;
+create policy "profiles_manager_update" on public.profiles for update to authenticated using (public.is_manager());
+
 -- tasks: shared board — any signed-in teammate can read, add, and update tasks
 drop policy if exists "tasks_read"   on public.tasks;
 drop policy if exists "tasks_insert" on public.tasks;
@@ -125,6 +139,17 @@ drop policy if exists "tasks_update" on public.tasks;
 create policy "tasks_read"   on public.tasks for select to authenticated using (true);
 create policy "tasks_insert" on public.tasks for insert to authenticated with check (auth.uid() = created_by);
 create policy "tasks_update" on public.tasks for update to authenticated using (true);
+
+-- delete: managers, or whoever created the task
+drop policy if exists "tasks_delete" on public.tasks;
+create policy "tasks_delete" on public.tasks for delete to authenticated
+  using (public.is_manager() or created_by = auth.uid());
+
+-- messages: any signed-in teammate reads the channel, posts as themselves
+drop policy if exists "messages_read"   on public.messages;
+drop policy if exists "messages_insert" on public.messages;
+create policy "messages_read"   on public.messages for select to authenticated using (true);
+create policy "messages_insert" on public.messages for insert to authenticated with check (user_id = auth.uid());
 
 -- invites: only managers can create / see / change them (accept screen uses get_invite())
 drop policy if exists "invites_read"   on public.invites;

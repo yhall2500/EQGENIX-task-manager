@@ -26,7 +26,7 @@ function CreateModal({ store }) {
   const [f, setF] = useState({
     title: '', desc: '', dept: D.DEPARTMENTS[0], priority: 'medium',
     estimate: '1 hr', due: '2026-06-24', dueTime: '17:00',
-    proof: 'note', requiresApproval: false,
+    proof: 'note', requiresApproval: false, assignedTo: '',
   });
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
@@ -39,6 +39,7 @@ function CreateModal({ store }) {
       dept: f.dept, priority: f.priority, estimate: f.estimate,
       due: new Date(`${f.due}T${f.dueTime}`),
       proof: f.proof, requiresApproval: f.requiresApproval,
+      assignedTo: f.assignedTo || null,
     });
   };
 
@@ -109,6 +110,17 @@ function CreateModal({ store }) {
           </div>
         </label>
 
+        <label className="tf-field full">
+          <span>Assign to <em className="tf-field-opt">— optional</em></span>
+          <div className="tf-select">
+            <select value={f.assignedTo} onChange={e => set('assignedTo', e.target.value)}>
+              <option value="">Anyone can claim it</option>
+              {store.members.map(u => <option key={u.id} value={u.id}>{u.name}{u.id === me.id ? ' (you)' : ''}</option>)}
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+
         <label className="tf-check full" onClick={() => set('requiresApproval', !f.requiresApproval)}>
           <span className={'tf-checkbox' + (f.requiresApproval ? ' on' : '')}>{f.requiresApproval && <Icon name="check" size={13} stroke={3} />}</span>
           <span className="tf-check-text"><b>Require manager approval</b> before it counts as done</span>
@@ -120,6 +132,126 @@ function CreateModal({ store }) {
         <div className="tf-foot-acts">
           <Button variant="ghost" onClick={store.closeModals}>Cancel</Button>
           <Button variant="primary" icon="plus" disabled={!valid} onClick={submit}>Post task</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ---------- edit task ----------
+function EditModal({ store }) {
+  const D = window.TASKFLOW_DATA;
+  const task = store.tasks.find(t => t.id === store.editId);
+  const toDateStr = (d) => { const x = new Date(d); return isNaN(x) ? '' : new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+  const toTimeStr = (d) => { const x = new Date(d); return isNaN(x) ? '17:00' : new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(11, 16); };
+  const [f, setF] = useState(() => ({
+    title: task.title, desc: task.desc === 'No description provided.' ? '' : task.desc,
+    dept: task.dept, priority: task.priority, estimate: task.estimate,
+    due: toDateStr(task.due), dueTime: toTimeStr(task.due),
+    proof: task.proof, requiresApproval: !!task.requiresApproval, assignedTo: task.assignedTo || '',
+  }));
+  const set = (k, v) => setF(s => ({ ...s, [k]: v }));
+  const valid = f.title.trim().length > 2;
+
+  const submit = () => {
+    if (!valid) return;
+    store.editTask(task.id, {
+      title: f.title.trim(),
+      desc: f.desc.trim() || 'No description provided.',
+      dept: f.dept, priority: f.priority, estimate: f.estimate,
+      due: f.due ? new Date(`${f.due}T${f.dueTime || '17:00'}`) : null,
+      proof: f.proof, requiresApproval: f.requiresApproval,
+      assignedTo: f.assignedTo || null,
+    });
+  };
+
+  return (
+    <Modal onClose={store.closeModals} wide>
+      <div className="tf-modal-head">
+        <div>
+          <div className="tf-modal-kicker">Edit task</div>
+          <h2>Update the details</h2>
+        </div>
+        <button className="tf-icon-btn" onClick={store.closeModals}><Icon name="x" size={18} /></button>
+      </div>
+
+      <div className="tf-form">
+        <label className="tf-field full">
+          <span>Task title</span>
+          <input autoFocus value={f.title} onChange={e => set('title', e.target.value)} placeholder="Task title" />
+        </label>
+        <label className="tf-field full">
+          <span>Description &amp; instructions</span>
+          <textarea rows="3" value={f.desc} onChange={e => set('desc', e.target.value)} placeholder="What needs doing…" />
+        </label>
+
+        <label className="tf-field">
+          <span>Department</span>
+          <div className="tf-select">
+            <select value={f.dept} onChange={e => set('dept', e.target.value)}>
+              {D.DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+        <label className="tf-field">
+          <span>Priority</span>
+          <div className="tf-prio-pick">
+            {['low', 'medium', 'high', 'urgent'].map(p => (
+              <button key={p} type="button" className={'tf-prio-opt ' + p + (f.priority === p ? ' on' : '')}
+                onClick={() => set('priority', p)}>{D.PRIORITY[p].label}</button>
+            ))}
+          </div>
+        </label>
+
+        <label className="tf-field">
+          <span>Due date</span>
+          <input type="date" value={f.due} onChange={e => set('due', e.target.value)} />
+        </label>
+        <label className="tf-field">
+          <span>Due time</span>
+          <input type="time" value={f.dueTime} onChange={e => set('dueTime', e.target.value)} />
+        </label>
+
+        <label className="tf-field">
+          <span>Estimated time</span>
+          <input value={f.estimate} onChange={e => set('estimate', e.target.value)} placeholder="e.g. 45 min" />
+        </label>
+        <label className="tf-field">
+          <span>Proof on completion</span>
+          <div className="tf-select">
+            <select value={f.proof} onChange={e => set('proof', e.target.value)}>
+              <option value="note">Completion note</option>
+              <option value="photo">Photo</option>
+              <option value="file">File upload</option>
+              <option value="checklist">Checklist confirm</option>
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+
+        <label className="tf-field full">
+          <span>Assign to <em className="tf-field-opt">— optional</em></span>
+          <div className="tf-select">
+            <select value={f.assignedTo} onChange={e => set('assignedTo', e.target.value)}>
+              <option value="">Anyone can claim it</option>
+              {store.members.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+
+        <label className="tf-check full" onClick={() => set('requiresApproval', !f.requiresApproval)}>
+          <span className={'tf-checkbox' + (f.requiresApproval ? ' on' : '')}>{f.requiresApproval && <Icon name="check" size={13} stroke={3} />}</span>
+          <span className="tf-check-text"><b>Require manager approval</b> before it counts as done</span>
+        </label>
+      </div>
+
+      <div className="tf-modal-foot">
+        <span className="tf-foot-note">Changes are shared with the whole team.</span>
+        <div className="tf-foot-acts">
+          <Button variant="ghost" onClick={store.closeModals}>Cancel</Button>
+          <Button variant="primary" icon="check" disabled={!valid} onClick={submit}>Save changes</Button>
         </div>
       </div>
     </Modal>
@@ -204,11 +336,16 @@ function CompleteModal({ store }) {
 function TaskDetail({ store }) {
   const task = store.tasks.find(t => t.id === store.detailId);
   const [comment, setComment] = useState('');
+  const [confirmDel, setConfirmDel] = useState(false);
   if (!task) return null;
   const me = store.me;
   const due = dueLabel(task.due);
   const action = taskAction(task, me);
   const creator = userById(task.createdBy);
+  const isCreator = task.createdBy === me.id;
+  const canEdit = me.role === 'manager' || isCreator;
+  const canDelete = me.role === 'manager' || isCreator;
+  const assignee = task.assignedTo ? userById(task.assignedTo) : null;
 
   const primary = () => {
     if (action.key === 'claim') store.claim(task.id);
@@ -225,7 +362,23 @@ function TaskDetail({ store }) {
           <div className="tf-sheet-head-tags">
             <PriorityTag priority={task.priority} /><DeptTag dept={task.dept} />
           </div>
+          {(canEdit || canDelete) && (
+            <div className="tf-sheet-head-acts">
+              {canEdit && <button className="tf-icon-btn" title="Edit task" onClick={() => store.openEdit(task.id)}><Icon name="edit" size={17} /></button>}
+              {canDelete && <button className="tf-icon-btn danger" title="Delete task" onClick={() => setConfirmDel(true)}><Icon name="trash" size={17} /></button>}
+            </div>
+          )}
         </header>
+
+        {confirmDel && (
+          <div className="tf-del-confirm">
+            <div className="tf-del-confirm-text"><b>Delete this task?</b><span>This removes it for the whole team and can’t be undone.</span></div>
+            <div className="tf-foot-acts">
+              <Button variant="ghost" onClick={() => setConfirmDel(false)}>Cancel</Button>
+              <Button variant="danger" icon="trash" onClick={() => store.deleteTask(task.id)}>Delete</Button>
+            </div>
+          </div>
+        )}
 
         <div className="tf-sheet-body">
           <h1 className="tf-sheet-title">{task.title}</h1>
@@ -234,7 +387,7 @@ function TaskDetail({ store }) {
             <div className="tf-fact"><span>Due</span><b className={'fact-due ' + due.state}>{due.full || 'No date'}</b></div>
             <div className="tf-fact"><span>Estimate</span><b>{task.estimate}</b></div>
             <div className="tf-fact"><span>Proof</span><b><ProofTag proof={task.proof} /></b></div>
-            <div className="tf-fact"><span>Approval</span><b>{task.requiresApproval ? 'Required' : 'Not needed'}</b></div>
+            <div className="tf-fact"><span>Assigned to</span><b>{assignee ? <span className="tf-fact-who"><Avatar user={assignee} size={20} />{assignee.id === me.id ? 'You' : assignee.name.split(' ')[0]}</span> : 'Anyone'}</b></div>
           </div>
 
           <section className="tf-sheet-sec">
@@ -297,8 +450,12 @@ function TaskDetail({ store }) {
         <footer className="tf-sheet-foot">
           {task.status === 'open' && (
             <>
-              <div className="tf-sheet-foot-note"><Icon name="users" size={15} stroke={2} />Open to the team · created by {creator.name.split(' ')[0]}</div>
-              <Button variant="primary" icon="hand" onClick={primary}>Claim this task</Button>
+              <div className="tf-sheet-foot-note">
+                {assignee
+                  ? <><Icon name="user" size={15} stroke={2} />Assigned to {assignee.id === me.id ? 'you' : assignee.name.split(' ')[0]} · created by {creator.name.split(' ')[0]}</>
+                  : <><Icon name="users" size={15} stroke={2} />Open to the team · created by {creator.name.split(' ')[0]}</>}
+              </div>
+              <Button variant="primary" icon="hand" onClick={primary}>{assignee && assignee.id === me.id ? 'Start this task' : 'Claim this task'}</Button>
             </>
           )}
           {task.status === 'in_progress' && task.claimedBy === me.id && (
@@ -367,4 +524,4 @@ function Toast({ toast }) {
   );
 }
 
-Object.assign(window, { Modal, CreateModal, CompleteModal, TaskDetail, NotifPanel, Toast });
+Object.assign(window, { Modal, CreateModal, EditModal, CompleteModal, TaskDetail, NotifPanel, Toast });

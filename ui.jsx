@@ -77,6 +77,7 @@ function Icon({ name, size = 18, stroke = 1.8, style }) {
     link: <><path d="M9 14a4 4 0 0 0 6 .5l3-3a4 4 0 0 0-5.7-5.7L11 7" /><path d="M15 10a4 4 0 0 0-6-.5l-3 3a4 4 0 0 0 5.7 5.7L13 17" /></>,
     shield: <><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><polyline points="9 12 11 14 15 10" /></>,
     edit: <><path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16z" /><line x1="13.5" y1="6.5" x2="17.5" y2="10.5" /></>,
+    trash: <><polyline points="4 7 20 7" /><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2" /><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>,
     award: <><circle cx="12" cy="9" r="5" /><path d="M9 13.5L7.5 21 12 18.5 16.5 21 15 13.5" /></>
   };
   return <svg {...p}>{paths[name] || null}</svg>;
