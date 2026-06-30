@@ -71,7 +71,6 @@ function Icon({ name, size = 18, stroke = 1.8, style }) {
     inbox: <><path d="M3 12h5l2 3h4l2-3h5" /><path d="M5 5h14l2 7v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z" /></>,
     home: <><path d="M4 11l8-7 8 7" /><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" /></>,
     filter: <polygon points="3 5 21 5 14 12.5 14 19 10 21 10 12.5" />,
-    grip: <><circle cx="9" cy="5" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="19" r="1" /></>,
     mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M4 7l8 6 8-6" /></>,
     send: <><line x1="21" y1="3" x2="10" y2="14" /><polygon points="21 3 14 21 10 14 3 10 21 3" /></>,
     logOut: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><polyline points="9 17 4 12 9 7" /><line x1="4" y1="12" x2="15" y2="12" /></>,
@@ -146,7 +145,7 @@ function Button({ variant = 'default', size = 'md', icon, children, onClick, dis
   return (
     <button className={`tf-btn ${variant} ${size}${full ? ' full' : ''}`} onClick={onClick} disabled={disabled} title={title} style={{ backgroundColor: "rgb(255, 156, 156)" }}>
       {icon && <Icon name={icon} size={size === 'sm' ? 15 : 17} stroke={2} />}
-      {children != null && children !== false && <span className="tf-btn-label">{children}</span>}
+      {children}
     </button>);
 
 }

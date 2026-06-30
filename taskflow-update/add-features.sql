@@ -85,12 +85,6 @@ drop policy if exists "profiles_manager_update" on public.profiles;
 create policy "profiles_manager_update" on public.profiles for update to authenticated
   using (public.is_manager());
 
--- ---------- 4. Per-user "Working on now" ordering (syncs across devices) ----------
--- Stores each member's manual drag order + chosen mode for their in-progress list.
--- Owned by the user; saved via the normal profile-update path.
-alter table public.profiles add column if not exists worknow_order jsonb;
-alter table public.profiles add column if not exists worknow_mode  text;
-
 -- ============================================================
 --  Done. Reload the app — Team and Chat tabs are now live, and
 --  managers can edit/delete tasks and promote/demote teammates.

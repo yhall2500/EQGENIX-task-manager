@@ -48,7 +48,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [view, setView] = useState('board');
   const [layout, setLayout] = useState('board');
-  const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false, priority: 'All', assignee: 'All', sort: 'due' });
+  const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false, priority: 'All', assignee: 'All' });
   const [detailId, setDetailId] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -257,13 +257,6 @@ function App() {
       setRev((r) => r + 1);
       try {await Backend.updateProfile(patch);flash('Profile updated', 'check');} catch (e) {onErr(e);}
     },
-    async savePrefs(patch) {
-      const m = members.find((x) => x.id === meId);
-      const next = { ...m, ...patch };
-      setMembers((list) => list.map((x) => x.id === meId ? next : x));
-      window.TASKFLOW_DATA.USERS = window.TASKFLOW_DATA.USERS.map((x) => x.id === meId ? next : x);
-      try {await Backend.updateProfile(patch);} catch (e) {/* order already applied locally */}
-    },
 
     openDetail(id) {setDetailId(id);setNotifOpen(false);setProfileOpen(false);},
     closeDetail() {setDetailId(null);},
@@ -274,7 +267,7 @@ function App() {
     closeModals() {setCreateOpen(false);setCompleteId(null);setEditId(null);},
     clearNotifs() {setNotifs((list) => list.map((n) => ({ ...n, read: true })));Backend.markNotificationsRead().catch(() => {});},
 
-    completeId, detailId, editId, sort: filters.sort,
+    completeId, detailId, editId,
     get filtered() {
       let list = tasks;
       const q = filters.q.trim().toLowerCase();
@@ -290,11 +283,11 @@ function App() {
   const unread = notifs.filter((n) => !n.read).length;
   const isManager = me.role === 'manager';
   const NAV = [
-  { key: 'board', label: t.boardTitle, short: 'Board', icon: 'board' },
-  { key: 'mine', label: 'My tasks', short: 'Mine', icon: 'user' },
-  { key: 'team', label: 'Team', short: 'Team', icon: 'users' },
-  { key: 'manager', label: 'Overview', short: 'Overview', icon: 'board' },
-  { key: 'chat', label: 'Chat', short: 'Chat', icon: 'chat' }];
+  { key: 'board', label: t.boardTitle, icon: 'board' },
+  { key: 'mine', label: 'My tasks', icon: 'user' },
+  { key: 'team', label: 'Team', icon: 'users' },
+  { key: 'manager', label: 'Overview', icon: 'board' },
+  { key: 'chat', label: 'Chat', icon: 'chat' }];
 
 
   return (
@@ -392,15 +385,6 @@ function App() {
             <button className={'tf-chip' + (filters.mine ? ' on' : '')} onClick={() => setFilters((f) => ({ ...f, mine: !f.mine }))}>
               <Icon name="user" size={14} stroke={2} />Only mine
             </button>
-            <div className="tf-select sm">
-              <select value={filters.sort} onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value }))}>
-                <option value="due">Sort: Due date</option>
-                <option value="priority">Sort: Priority</option>
-                <option value="created">Sort: Newest</option>
-                <option value="title">Sort: A–Z</option>
-              </select>
-              <Icon name="chevronDown" size={14} />
-            </div>
             <div className="tf-layout-toggle">
               <button className={layout === 'board' ? 'on' : ''} onClick={() => setLayout('board')} title="Board"><Icon name="board" size={16} /></button>
               <button className={layout === 'list' ? 'on' : ''} onClick={() => setLayout('list')} title="List"><Icon name="list" size={16} /></button>
@@ -438,20 +422,6 @@ function App() {
         }
         {view === 'chat' && <ChatView store={store} />}
       </main>
-
-      <nav className="tf-mobnav">
-        {NAV.map((n) => {
-          const pending = n.key === 'manager' && isManager && tasks.filter((x) => x.status === 'pending_approval').length;
-          return (
-            <button key={n.key} className={'tf-mobnav-btn' + (view === n.key ? ' on' : '')} onClick={() => setView(n.key)}>
-              <span className="tf-mobnav-ic">
-                <Icon name={n.icon} size={20} stroke={2} />
-                {pending ? <span className="tf-mobnav-badge">{pending}</span> : null}
-              </span>
-              <span>{n.short}</span>
-            </button>);
-        })}
-      </nav>
 
       {createOpen && <CreateModal store={store} />}
       {editId && <EditModal store={store} />}

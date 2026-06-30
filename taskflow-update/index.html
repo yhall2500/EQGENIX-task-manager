@@ -266,27 +266,6 @@ h1,h2,h3{margin:0;}
 .tf-my-section{padding:22px 24px 0;}
 .tf-my-section h2{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:13px;}
 .tf-my-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px;}
-.tf-worknow-head{display:flex;align-items:center;gap:12px;margin-bottom:13px;}
-.tf-worknow-head h2{margin:0;}
-.tf-seg{margin-left:auto;display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;}
-.tf-seg button{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;font-size:12px;font-weight:600;color:var(--ink-2);transition:.13s;}
-.tf-seg button:hover{color:var(--ink);}
-.tf-seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);}
-.tf-drag{position:relative;min-width:0;}
-.tf-drag-handle{position:absolute;top:8px;right:8px;z-index:4;display:flex;align-items:center;justify-content:center;
-  width:30px;height:30px;border-radius:8px;color:var(--ink-3);background:var(--surface);border:1px solid var(--border);
-  cursor:grab;touch-action:none;box-shadow:var(--shadow-sm);}
-.tf-drag-handle:hover{color:var(--ink);background:var(--surface-2);}
-.tf-drag-handle:active{cursor:grabbing;}
-.tf-drag.dragging{opacity:.45;}
-.tf-drag.dragging .tf-drag-handle{cursor:grabbing;}
-.tf-drag.placeholder{border:2px dashed var(--primary);border-radius:var(--r);background:var(--primary-soft);
-  display:flex;align-items:center;justify-content:center;min-height:120px;}
-.tf-drag.placeholder .tf-drop-hint{color:var(--primary-deep);font-weight:600;font-size:13px;letter-spacing:.01em;}
-.tf-drag-ghost{position:fixed;top:0;left:0;z-index:300;pointer-events:none;will-change:transform;}
-.tf-drag-ghost .tf-card{box-shadow:0 20px 44px rgba(0,0,0,.30);transform:rotate(1.6deg);border-color:var(--primary);}
-body.tf-noselect{user-select:none;-webkit-user-select:none;cursor:grabbing;}
-.tf-drag.dragover .tf-card{outline:2px dashed var(--primary);outline-offset:3px;}
 .tf-my-empty{font-size:13px;color:var(--ink-3);background:var(--surface-2);border:1px dashed var(--border-2);
   border-radius:var(--r);padding:18px;font-weight:500;}
 
@@ -802,104 +781,6 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
   .tf-mgr-stats{grid-template-columns:repeat(3,1fr);}
   .tf-auth{grid-template-columns:1fr;}
   .tf-auth-art{display:none;}
-}
-
-/* ============ mobile / tablet ============ */
-.tf-mobnav{display:none;}
-@media (max-width:900px){
-  .tf-my-stats,.tf-mgr-stats{grid-template-columns:repeat(3,1fr);}
-  .tf-form{grid-template-columns:1fr;}
-}
-@media (max-width:760px){
-  /* bottom tab nav */
-  .tf-mobnav{display:flex;flex:none;background:var(--surface);border-top:1px solid var(--border);
-    padding:6px 4px;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:30;}
-  .tf-mobnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;
-    border-radius:10px;color:var(--ink-3);font-size:10.5px;font-weight:600;min-width:0;}
-  .tf-mobnav-btn.on{color:var(--primary);}
-  .tf-mobnav-btn span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-  .tf-mobnav-ic{position:relative;display:flex;}
-  .tf-mobnav-badge{position:absolute;top:-5px;right:-9px;background:var(--review);color:#fff;font-size:9px;
-    font-weight:700;min-width:15px;height:15px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
-
-  /* top bar */
-  .tf-top{height:56px;padding:0 12px;gap:10px;}
-  .tf-brand{min-width:0;gap:9px;}
-  .tf-brand-text{display:none;}
-  .tf-nav{display:none;}
-  .tf-top-right{gap:6px;}
-  .tf-top-right .tf-btn.default{display:none;}
-  .tf-top-right .tf-btn.primary{padding:9px;}
-  .tf-top-right .tf-btn.primary .tf-btn-label{display:none;}
-  .tf-user-meta{display:none;}
-  .tf-user-btn{padding:3px;}
-  .tf-user-btn>svg{display:none;}
-  .tf-notif,.tf-usermenu{width:min(340px,calc(100vw - 20px));}
-
-  /* subbar */
-  .tf-subbar{flex-wrap:wrap;gap:8px;padding:10px 12px;}
-  .tf-search{width:100%;flex:1 1 100%;}
-  .tf-subbar-right{width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
-  .tf-subbar-right>*{flex:none;}
-
-  /* headings + board */
-  .tf-viewhead{padding:16px 14px 12px;}
-  .tf-viewhead h1{font-size:20px;}
-  .tf-viewhead p{font-size:13px;}
-  .tf-board{grid-template-columns:1fr;overflow-y:auto;padding:0 12px 16px;gap:12px;}
-  .tf-col{min-height:auto;}
-  .tf-col-body{overflow:visible;}
-
-  /* stats + grids */
-  .tf-my-stats,.tf-mgr-stats{grid-template-columns:repeat(2,1fr);padding:0 12px 6px;gap:10px;}
-  .tf-stat{padding:13px 14px;}
-  .tf-stat-n{font-size:23px;}
-  .tf-my-section{padding:18px 12px 0;}
-  .tf-my-grid{grid-template-columns:1fr;}
-  .tf-worknow-head{flex-wrap:wrap;}
-  .tf-seg{margin-left:0;}
-  .tf-personal{margin:4px 12px 8px;padding:14px;}
-  .tf-personal-add{flex-wrap:wrap;}
-  .tf-personal-date{width:100%;}
-
-  /* manager + team */
-  .tf-mgr-grid{grid-template-columns:1fr;padding:14px 12px 0;gap:12px;}
-  .tf-mgr-stats{grid-template-columns:repeat(2,1fr);}
-  .tf-panel{padding:15px 16px;}
-  .tf-analytics-row{flex-direction:column;align-items:flex-start;gap:18px;}
-  .tf-mgr-bar{padding:0 12px 4px;}
-  .tf-team{padding:4px 12px 24px;}
-  .tf-team-grid{grid-template-columns:1fr;}
-  .tf-team-invite-cta{flex-direction:column;align-items:flex-start;gap:12px;}
-
-  /* modals become bottom sheets */
-  .tf-overlay{padding:0;align-items:flex-end;}
-  .tf-modal,.tf-modal.wide{width:100%;max-width:100%;max-height:92vh;border-radius:18px 18px 0 0;}
-  .tf-profile,.tf-invite-modal{width:100%;}
-  .tf-form{padding:16px;}
-  .tf-invite-form{grid-template-columns:1fr;}
-  .tf-modal-foot{flex-wrap:wrap;gap:9px;}
-  .tf-foot-acts{width:100%;}
-  .tf-foot-acts .tf-btn{flex:1;}
-
-  /* task detail slide-over full width */
-  .tf-sheet{width:100%;}
-  .tf-sheet-facts{grid-template-columns:1fr 1fr;}
-
-  /* chat */
-  .tf-chat-head{padding:14px 16px;}
-  .tf-chat-scroll{padding:14px 14px 8px;}
-  .tf-chat-compose{padding:12px 14px;}
-  .tf-msg-main{max-width:84%;}
-
-  /* auth */
-  .tf-auth-panel{padding:28px 18px;}
-  .tf-auth-card h1{font-size:24px;}
-}
-@media (max-width:380px){
-  .tf-my-stats,.tf-mgr-stats{grid-template-columns:1fr 1fr;}
-  .tf-mobnav-btn{font-size:0;gap:0;}
-  .tf-mobnav-btn span:last-child{display:none;}
 }
 </style>
 </head>

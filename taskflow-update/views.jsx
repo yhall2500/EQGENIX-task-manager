@@ -4,28 +4,6 @@
    Props pattern: components receive { store } with state + actions.
    ============================================================ */
 
-// ---------- task sorting ----------
-const PRIO_RANK = { urgent: 0, high: 1, medium: 2, low: 3 };
-const dueVal = (t) => t.due ? new Date(t.due).getTime() : Infinity;
-function taskComparator(sort) {
-  return (a, b) => {
-    switch (sort) {
-      case 'priority': {
-        const pa = PRIO_RANK[a.priority] ?? 9, pb = PRIO_RANK[b.priority] ?? 9;
-        if (pa !== pb) return pa - pb;
-        return dueVal(a) - dueVal(b);
-      }
-      case 'created':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'title':
-        return (a.title || '').localeCompare(b.title || '');
-      case 'due':
-      default:
-        return dueVal(a) - dueVal(b);
-    }
-  };
-}
-
 // ---------- contextual action for a task ----------
 function taskAction(task, me) {
   const claimVerb = (window.__TF && window.__TF.claimVerb) || 'Claim';
@@ -127,8 +105,8 @@ function BoardColumn({ col, tasks, store }) {
 
 function BoardView({ store }) {
   const tasks = store.filtered;
-  const cmp = taskComparator(store.sort);
-  const byStatus = (s) => tasks.filter(t => t.status === s).slice().sort(cmp);
+  const byStatus = (s) => tasks.filter(t => t.status === s)
+    .sort((a, b) => (new Date(a.due) - new Date(b.due)));
   return (
     <div className="tf-board">
       {COLUMNS.map(col => <BoardColumn key={col.status} col={col} tasks={byStatus(col.status)} store={store} />)}
@@ -167,11 +145,10 @@ function ListRow({ task, store }) {
 }
 
 function ListView({ store }) {
-  const cmp = taskComparator(store.sort);
   const tasks = store.filtered.slice().sort((a, b) => {
     const order = { open: 0, in_progress: 1, pending_approval: 2, completed: 3 };
     if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
-    return cmp(a, b);
+    return new Date(a.due) - new Date(b.due);
   });
   return (
     <div className="tf-listwrap">
@@ -182,150 +159,6 @@ function ListView({ store }) {
           {tasks.length === 0 && <tr><td colSpan="5" className="tf-list-empty">No tasks match your filters.</td></tr>}
         </tbody>
       </table>
-    </div>
-  );
-}
-
-// ---------- working-on-now: sort by due date or manual drag-reorder ----------
-function WorkingNowSection({ store, items, meId }) {
-  const me = store.me;
-  const modeKey = 'tf-worknow-mode-' + meId;
-  const orderKey = 'tf-worknow-order-' + meId;
-  const read = (k, fb) => { try { const v = localStorage.getItem(k); return v == null ? fb : v; } catch (e) { return fb; } };
-  // source of truth: the user's saved profile pref (syncs across devices); localStorage is an offline fallback
-  const [mode, setMode] = useState(() => me.worknowMode || read(modeKey, 'due'));
-  const [order, setOrder] = useState(() => {
-    if (Array.isArray(me.worknowOrder)) return me.worknowOrder;
-    try { return JSON.parse(read(orderKey, '[]')); } catch (e) { return []; }
-  });
-  const [dragId, setDragId] = useState(null);
-  const [overId, setOverId] = useState(null);
-  // live order shown mid-drag (so cards shuffle under the finger before we persist)
-  const [liveIds, setLiveIds] = useState(null);
-  const [ghost, setGhost] = useState(null); // {x,y} pointer position of the lifted card
-  // refs mirror state so pointer handlers never read a stale closure between renders
-  const dragRef = useRef(null);
-  const liveRef = useRef(null);
-  const grabRef = useRef({ dx: 0, dy: 0, w: 0, h: 0 }); // where you grabbed + card size
-  const gridRef = useRef(null);
-
-  const dueSorted = items.slice().sort((a, b) => dueVal(a) - dueVal(b));
-  let display = dueSorted;
-  if (mode === 'manual') {
-    const ranking = liveIds || order;
-    const pos = new Map(ranking.map((id, i) => [id, i]));
-    display = items.slice().sort((a, b) => {
-      const pa = pos.has(a.id) ? pos.get(a.id) : Infinity;
-      const pb = pos.has(b.id) ? pos.get(b.id) : Infinity;
-      if (pa !== pb) return pa - pb;
-      return dueVal(a) - dueVal(b);
-    });
-  }
-
-  const saveOrder = (ids) => {
-    setOrder(ids);
-    try { localStorage.setItem(orderKey, JSON.stringify(ids)); } catch (e) {}
-    store.savePrefs({ worknowOrder: ids, worknowMode: 'manual' });
-  };
-  const pickMode = (m) => {
-    setMode(m); try { localStorage.setItem(modeKey, m); } catch (e) {}
-    let ids = order;
-    if (m === 'manual' && order.length === 0) {
-      ids = dueSorted.map(t => t.id); setOrder(ids);
-      try { localStorage.setItem(orderKey, JSON.stringify(ids)); } catch (e) {}
-    }
-    store.savePrefs({ worknowMode: m, worknowOrder: ids });
-  };
-
-  // pointer-based reorder via WINDOW listeners — robust to React reordering the DOM
-  // mid-drag (which silently drops setPointerCapture). Works for mouse AND touch.
-  const cardUnder = (x, y) => {
-    const el = document.elementFromPoint(x, y);
-    const card = el && el.closest('.tf-drag');
-    return card ? card.getAttribute('data-id') : null;
-  };
-  const reorderTo = (targetId) => {
-    if (!dragRef.current || !targetId || targetId === dragRef.current) return;
-    const cur = (liveRef.current || display.map(t => t.id)).slice();
-    const from = cur.indexOf(dragRef.current), to = cur.indexOf(targetId);
-    if (from > -1 && to > -1 && from !== to) {
-      cur.splice(from, 1); cur.splice(to, 0, dragRef.current);
-      liveRef.current = cur; setLiveIds(cur);
-    }
-    setOverId(targetId);
-  };
-  const startDrag = (id, e) => {
-    e.preventDefault();
-    const cardEl = e.currentTarget.closest('.tf-drag');
-    const rect = cardEl.getBoundingClientRect();
-    grabRef.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top, w: rect.width, h: rect.height };
-    dragRef.current = id;
-    liveRef.current = display.map(t => t.id);
-    setDragId(id);
-    setLiveIds(liveRef.current);
-    setGhost({ x: e.clientX, y: e.clientY });
-    document.body.classList.add('tf-noselect');
-    const onMove = (ev) => {
-      if (ev.cancelable) ev.preventDefault();
-      setGhost({ x: ev.clientX, y: ev.clientY });
-      reorderTo(cardUnder(ev.clientX, ev.clientY));
-    };
-    const onUp = () => {
-      if (liveRef.current) saveOrder(liveRef.current);
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-      document.body.classList.remove('tf-noselect');
-      dragRef.current = null; liveRef.current = null;
-      setDragId(null); setOverId(null); setLiveIds(null); setGhost(null);
-    };
-    window.addEventListener('pointermove', onMove, { passive: false });
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
-  };
-
-  return (
-    <div className="tf-my-section">
-      <div className="tf-worknow-head">
-        <h2>Working on now<span className="tf-col-count">{items.length}</span></h2>
-        {items.length > 1 && (
-          <div className="tf-seg">
-            <button className={mode === 'due' ? 'on' : ''} onClick={() => pickMode('due')}><Icon name="clock" size={13} stroke={2} />Due date</button>
-            <button className={mode === 'manual' ? 'on' : ''} onClick={() => pickMode('manual')}><Icon name="grip" size={14} stroke={2} />Manual</button>
-          </div>
-        )}
-      </div>
-      {items.length ? (
-        <div className="tf-my-grid" ref={gridRef}>
-          {display.map(t => mode === 'manual' ? (
-            <div key={t.id} data-id={t.id}
-              className={'tf-drag' + (dragId === t.id ? ' placeholder' : '')}
-              style={dragId === t.id ? { minHeight: grabRef.current.h + 'px' } : undefined}>
-              {dragId === t.id ? (
-                <span className="tf-drop-hint">Drop here</span>
-              ) : (
-                <React.Fragment>
-                  <button className="tf-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"
-                    onPointerDown={(e) => startDrag(t.id, e)}>
-                    <Icon name="grip" size={16} stroke={2} />
-                  </button>
-                  <TaskCard task={t} store={store} />
-                </React.Fragment>
-              )}
-            </div>
-          ) : <TaskCard key={t.id} task={t} store={store} />)}
-        </div>
-      ) : <p className="tf-my-empty">You haven’t claimed anything yet — grab a task from the board.</p>}
-      {ghost && dragId && (() => {
-        const dt = items.find(t => t.id === dragId);
-        if (!dt) return null;
-        return (
-          <div className="tf-drag-ghost"
-            style={{ width: grabRef.current.w + 'px', transform: 'translate(' + (ghost.x - grabRef.current.dx) + 'px,' + (ghost.y - grabRef.current.dy) + 'px)' }}>
-            <TaskCard task={dt} store={store} />
-          </div>
-        );
-      })()}
     </div>
   );
 }
@@ -360,7 +193,7 @@ function MyTasksView({ store }) {
         <Stat n={done.length} label="Completed" tone="done" />
       </div>
       {assigned.length > 0 && <Section title="Assigned to you — not started" items={assigned} empty="" />}
-      <WorkingNowSection store={store} items={active} meId={me.id} />
+      <Section title="Working on now" items={active} empty="You haven’t claimed anything yet — grab a task from the board." />
       {review.length > 0 && <Section title="Submitted, awaiting review" items={review} empty="" />}
       <Section title="Your completed work" items={done} empty="Completed tasks you finish will be logged here." />
     </div>
@@ -554,5 +387,5 @@ function exportCSV(tasks) {
 window.exportCSV = exportCSV;
 
 Object.assign(window, {
-  TaskCard, BoardView, ListView, MyTasksView, ManagerView, Stat, taskAction, taskComparator, WorkingNowSection, activityVerb,
+  TaskCard, BoardView, ListView, MyTasksView, ManagerView, Stat, taskAction, activityVerb,
 });

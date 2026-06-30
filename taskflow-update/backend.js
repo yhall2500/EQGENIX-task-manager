@@ -52,7 +52,7 @@
     function write(db) { try { localStorage.setItem(LKEY, JSON.stringify(db)); } catch (e) {} }
     const cbs = [];
     const emit = () => { const u = api.session(); cbs.forEach(cb => cb(u)); };
-    const pub = (m) => m ? ({ id: m.id, email: m.email, name: m.name, title: m.title, role: m.role, color: m.color, worknowOrder: m.worknowOrder || null, worknowMode: m.worknowMode || null }) : null;
+    const pub = (m) => m ? ({ id: m.id, email: m.email, name: m.name, title: m.title, role: m.role, color: m.color }) : null;
 
     const api = {
       session() { const db = read(); return pub(db.members.find(m => m.id === db.sessionUserId)); },
@@ -173,7 +173,7 @@
   const Supa = (() => {
     if (!SB_READY) return null;
     const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
-    const pubFromProfile = (p) => p ? ({ id: p.id, email: p.email, name: p.full_name, title: p.title, role: p.role, color: p.color, worknowOrder: p.worknow_order || null, worknowMode: p.worknow_mode || null }) : null;
+    const pubFromProfile = (p) => p ? ({ id: p.id, email: p.email, name: p.full_name, title: p.title, role: p.role, color: p.color }) : null;
     // map db row (snake_case) → app task shape (camelCase)
     const fromRow = (r) => reviveTask({
       id: r.id, title: r.title, desc: r.description, dept: r.dept, priority: r.priority, estimate: r.estimate,
@@ -220,8 +220,6 @@
       async updateProfile(patch) {
         const { data: { user } } = await sb.auth.getUser();
         const row = {}; if (patch.name != null) row.full_name = patch.name; if (patch.title != null) row.title = patch.title;
-        if (patch.worknowOrder !== undefined) row.worknow_order = patch.worknowOrder;
-        if (patch.worknowMode !== undefined) row.worknow_mode = patch.worknowMode;
         const { data } = await sb.from('profiles').update(row).eq('id', user.id).select().single();
         return pubFromProfile(data);
       },
