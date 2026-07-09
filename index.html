@@ -795,6 +795,90 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
 .tf-del-confirm-text b{display:block;font-size:13.5px;font-weight:700;color:#a23528;}
 .tf-del-confirm-text span{display:block;font-size:12px;color:#a8584e;margin-top:1px;}
 
+
+/* ---------- projects ---------- */
+.tf-projects{flex:1;overflow-y:auto;min-height:0;padding:0 24px 32px;}
+.tf-projects-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0 16px;}
+.tf-projects-bar-note{font-size:13px;color:var(--ink-3);font-weight:500;}
+.tf-proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;}
+.tf-proj-card{position:relative;text-align:left;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden;transition:.16s;display:flex;}
+.tf-proj-card:hover{border-color:var(--border-2);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.tf-proj-stripe{width:5px;flex:none;background:var(--proj,var(--primary));}
+.tf-proj-card-body{flex:1;min-width:0;padding:16px 17px;display:flex;flex-direction:column;gap:12px;}
+.tf-proj-card-head{display:flex;align-items:center;gap:9px;}
+.tf-proj-dot{width:10px;height:10px;border-radius:50%;background:var(--proj,var(--primary));flex:none;}
+.tf-proj-dot.lg{width:14px;height:14px;}
+.tf-proj-name{font-size:16px;font-weight:800;letter-spacing:-.01em;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tf-proj-overdue{font-size:11px;font-weight:700;color:var(--overdue);background:var(--overdue-soft);
+  padding:3px 8px;border-radius:99px;flex:none;}
+.tf-proj-desc{margin:-4px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:18px;}
+.tf-proj-desc.muted{color:var(--ink-3);font-style:italic;}
+.tf-proj-progress-top{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;
+  font-weight:600;color:var(--ink-2);margin-bottom:6px;}
+.tf-proj-progress-top b{font-size:12.5px;font-weight:800;color:var(--ink);}
+.tf-proj-track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border);}
+.tf-proj-fill{height:100%;border-radius:99px;background:var(--proj,var(--primary));min-width:2px;transition:width .4s;}
+.tf-proj-counts{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.tf-proj-count{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink-2);}
+.tf-proj-count-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.tf-proj-count-dot.open{background:var(--open);} .tf-proj-count-dot.progress{background:var(--progress);}
+.tf-proj-count-dot.done{background:var(--done);}
+.tf-proj-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding-top:12px;border-top:1px solid var(--border);}
+.tf-proj-noone{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-3);font-weight:500;}
+.tf-proj-due{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--ink-2);white-space:nowrap;}
+.tf-proj-due.overdue{color:var(--overdue);} .tf-proj-due.soon{color:#c47a1e;}
+.tf-proj-due.chip{background:var(--surface-2);border:1px solid var(--border);padding:6px 11px;border-radius:99px;}
+.tf-proj-due.chip.overdue{background:var(--overdue-soft);border-color:transparent;}
+
+/* projects empty state */
+.tf-proj-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:56px 40px;gap:4px;background:var(--surface-2);border:1px dashed var(--border-2);border-radius:var(--r-lg);}
+.tf-proj-empty.inset{margin:0 24px;}
+.tf-proj-empty h2{font-size:19px;font-weight:800;letter-spacing:-.02em;}
+.tf-proj-empty p{margin:0 0 14px;color:var(--ink-2);font-size:13.5px;line-height:1.55;max-width:400px;}
+.tf-proj-empty-note{margin:6px 0 0;color:var(--ink-3);font-size:13px;font-style:italic;}
+
+/* project detail */
+.tf-proj-detail{flex:1;display:flex;flex-direction:column;min-height:0;}
+.tf-proj-detail-head{display:flex;align-items:center;gap:12px;padding:20px 24px 12px;flex:none;}
+.tf-proj-detail-id{flex:1;min-width:0;}
+.tf-proj-detail-id h1{font-size:23px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tf-proj-detail-id p{margin:3px 0 0;font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tf-proj-detail-acts{display:flex;align-items:center;gap:8px;flex:none;}
+.tf-proj-detail-meta{display:flex;align-items:center;gap:22px;padding:0 24px 16px;flex:none;}
+.tf-proj-detail-progress{flex:1;max-width:420px;}
+.tf-proj-detail-people{flex:none;}
+.tf-proj-board{padding-top:0;}
+
+/* color swatches in project modal */
+.tf-proj-swatches{display:flex;gap:9px;flex-wrap:wrap;}
+.tf-proj-swatch{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  color:#fff;border:2px solid transparent;box-shadow:var(--shadow-sm);transition:.13s;}
+.tf-proj-swatch:hover{transform:translateY(-1px);}
+.tf-proj-swatch.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--surface),0 0 0 4.5px var(--ink);}
+
+/* project pill (task detail header) */
+.tf-proj-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink);
+  background:var(--surface-2);border:1px solid var(--border-2);padding:4px 10px;border-radius:99px;transition:.13s;
+  max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tf-proj-pill:hover{border-color:var(--proj);color:var(--proj);}
+.tf-proj-pill-dot{width:8px;height:8px;border-radius:50%;background:var(--proj,var(--primary));flex:none;}
+
+@media (max-width:760px){
+  .tf-projects{padding:0 12px 24px;}
+  .tf-proj-grid{grid-template-columns:1fr;}
+  .tf-proj-detail-head{flex-wrap:wrap;padding:16px 12px 10px;}
+  .tf-proj-detail-acts{width:100%;}
+  .tf-proj-detail-acts .tf-btn{margin-left:auto;}
+  .tf-proj-detail-meta{flex-direction:column;align-items:stretch;gap:12px;padding:0 12px 14px;}
+  .tf-proj-detail-progress{max-width:none;}
+  .tf-proj-empty.inset{margin:0 12px;}
+}
+
 @media (max-width:1180px){
   .tf-board{grid-template-columns:repeat(2,1fr);overflow-y:auto;}
   .tf-col{min-height:280px;}
@@ -910,7 +994,7 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script>
+<script data-src="config.js">
 /* ============================================================
    TaskFlow — backend configuration
    ------------------------------------------------------------
@@ -933,7 +1017,7 @@ window.TASKFLOW_CONFIG = {
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>
+<script data-src="data.js">
 /* ============================================================
    TaskFlow — mock data + helpers (plain JS, attached to window)
    "Today" is anchored to Mon Jun 22 2026 for stable relative dates.
@@ -1135,7 +1219,7 @@ window.TASKFLOW_CONFIG = {
 })();
 
 </script>
-<script>
+<script data-src="backend.js">
 /* ============================================================
    TaskFlow — Backend abstraction (plain JS, window.Backend)
    Two implementations behind one async API:
@@ -1181,10 +1265,10 @@ window.TASKFLOW_CONFIG = {
         c.activity = (c.activity || []).map(x => ({ ...x, at: x.at instanceof Date ? x.at.toISOString() : x.at }));
         return c;
       });
-      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, invites: [], messages: [], personal: [], notifications: [], sessionUserId: null, seeded: true };
+      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, projects: [], invites: [], messages: [], personal: [], notifications: [], sessionUserId: null, seeded: true };
     }
     function read() {
-      try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; if (!d.personal) d.personal = []; if (!d.notifications) d.notifications = []; return d; } } catch (e) {}
+      try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; if (!d.personal) d.personal = []; if (!d.notifications) d.notifications = []; if (!d.projects) d.projects = []; return d; } } catch (e) {}
       const db = fresh(); write(db); return db;
     }
     function write(db) { try { localStorage.setItem(LKEY, JSON.stringify(db)); } catch (e) {} }
@@ -1244,6 +1328,31 @@ window.TASKFLOW_CONFIG = {
         if (m) { m.role = role; write(db); } return Promise.resolve(pub(m));
       },
       deleteTask(id) { const db = read(); db.tasks = db.tasks.filter(x => x.id !== id); write(db); return Promise.resolve(true); },
+      listProjects() {
+        const db = read();
+        return Promise.resolve((db.projects || []).filter(p => !p.archived)
+          .map(p => ({ ...p, due: p.due ? new Date(p.due) : null, createdAt: p.createdAt ? new Date(p.createdAt) : null })));
+      },
+      createProject(data) {
+        const db = read(); const now = new Date().toISOString();
+        const p = { id: rid('proj_'), name: data.name, description: data.description || null,
+          color: data.color || COLORS[(db.projects || []).length % COLORS.length],
+          due: data.due ? new Date(data.due).toISOString() : null,
+          archived: false, createdBy: db.sessionUserId, createdAt: now };
+        db.projects = db.projects || []; db.projects.push(p); write(db);
+        return Promise.resolve({ ...p, due: p.due ? new Date(p.due) : null, createdAt: new Date(p.createdAt) });
+      },
+      updateProject(id, patch) {
+        const db = read(); const p = (db.projects || []).find(x => x.id === id);
+        if (p) { const np = { ...patch }; if (np.due instanceof Date) np.due = np.due.toISOString(); Object.assign(p, np); write(db); }
+        return Promise.resolve(p ? { ...p, due: p.due ? new Date(p.due) : null } : null);
+      },
+      deleteProject(id) {
+        const db = read();
+        db.projects = (db.projects || []).filter(x => x.id !== id);
+        db.tasks.forEach(t => { if (t.projectId === id) t.projectId = null; });
+        write(db); return Promise.resolve(true);
+      },
       listMessages() { const db = read(); return Promise.resolve((db.messages || []).map(m => ({ ...m, at: new Date(m.at) }))); },
       sendMessage(text) {
         const db = read(); const m = { id: rid('m_'), userId: db.sessionUserId, body: text, at: new Date().toISOString() };
@@ -1315,7 +1424,7 @@ window.TASKFLOW_CONFIG = {
     // map db row (snake_case) → app task shape (camelCase)
     const fromRow = (r) => reviveTask({
       id: r.id, title: r.title, desc: r.description, dept: r.dept, priority: r.priority, estimate: r.estimate,
-      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to, recurrence: r.recurrence,
+      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to, recurrence: r.recurrence, projectId: r.project_id,
       createdBy: r.created_by, createdAt: r.created_at, claimedBy: r.claimed_by, claimedAt: r.claimed_at,
       completedBy: r.completed_by, completedAt: r.completed_at, approvedBy: r.approved_by, approvedAt: r.approved_at,
       completionNote: r.completion_note, proofUrl: r.proof_url, comments: r.comments || [], activity: r.activity || [],
@@ -1323,7 +1432,7 @@ window.TASKFLOW_CONFIG = {
     // map app patch → db columns
     const toRow = (d) => {
       const m = { title: 'title', desc: 'description', dept: 'dept', priority: 'priority', estimate: 'estimate',
-        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to', recurrence: 'recurrence',
+        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to', recurrence: 'recurrence', projectId: 'project_id',
         claimedBy: 'claimed_by', claimedAt: 'claimed_at', completedBy: 'completed_by', completedAt: 'completed_at',
         approvedBy: 'approved_by', approvedAt: 'approved_at', completionNote: 'completion_note', proofUrl: 'proof_url', comments: 'comments', activity: 'activity' };
       const out = {};
@@ -1332,6 +1441,9 @@ window.TASKFLOW_CONFIG = {
       return out;
     };
     let profileCache = null;
+    const projFromRow = (r) => r ? ({ id: r.id, name: r.name, description: r.description, color: r.color,
+      due: r.due ? new Date(r.due) : null, archived: r.archived,
+      createdBy: r.created_by, createdAt: r.created_at ? new Date(r.created_at) : null }) : null;
     async function myProfile() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { profileCache = null; return null; }
@@ -1387,6 +1499,28 @@ window.TASKFLOW_CONFIG = {
         if (error) throw new Error(error.message); return pubFromProfile(data);
       },
       async deleteTask(id) { const { error } = await sb.from('tasks').delete().eq('id', id); if (error) throw new Error(error.message); return true; },
+      async listProjects() {
+        const { data, error } = await sb.from('projects').select('*').eq('archived', false).order('created_at', { ascending: true });
+        if (error) throw new Error(error.message); return (data || []).map(projFromRow);
+      },
+      async createProject(data) {
+        const { data: { user } } = await sb.auth.getUser();
+        const row = { name: data.name, description: data.description || null, color: data.color || null,
+          due: data.due ? new Date(data.due).toISOString() : null, created_by: user.id };
+        const { data: ins, error } = await sb.from('projects').insert(row).select().single();
+        if (error) throw new Error(error.message); return projFromRow(ins);
+      },
+      async updateProject(id, patch) {
+        const row = {};
+        if (patch.name != null) row.name = patch.name;
+        if (patch.description !== undefined) row.description = patch.description;
+        if (patch.color !== undefined) row.color = patch.color;
+        if (patch.due !== undefined) row.due = patch.due ? new Date(patch.due).toISOString() : null;
+        if (patch.archived !== undefined) row.archived = patch.archived;
+        const { data, error } = await sb.from('projects').update(row).eq('id', id).select().single();
+        if (error) throw new Error(error.message); return projFromRow(data);
+      },
+      async deleteProject(id) { const { error } = await sb.from('projects').delete().eq('id', id); if (error) throw new Error(error.message); return true; },
       async listMessages() {
         const { data, error } = await sb.from('messages').select('*').order('created_at', { ascending: true }).limit(300);
         if (error) throw new Error(error.message);
@@ -1467,6 +1601,10 @@ window.TASKFLOW_CONFIG = {
     getInvite(token) { return impl.getInvite(token); },
     setRole(uid, role) { return impl.setRole(uid, role); },
     deleteTask(id) { return impl.deleteTask(id); },
+    listProjects() { return impl.listProjects(); },
+    createProject(data) { return impl.createProject(data); },
+    updateProject(id, patch) { return impl.updateProject(id, patch); },
+    deleteProject(id) { return impl.deleteProject(id); },
     listMessages() { return impl.listMessages(); },
     sendMessage(text) { return impl.sendMessage(text); },
     listPersonal() { return impl.listPersonal(); },
@@ -1485,7 +1623,7 @@ window.TASKFLOW_CONFIG = {
 })();
 
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="tweaks-panel.jsx">
 // @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
 
 /* BEGIN USAGE */
@@ -2029,7 +2167,7 @@ Object.assign(window, {
 });
 
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="ui.jsx">
 /* ============================================================
    TaskFlow — shared UI: helpers, icons, avatars, badges, button
    Exports to window. Requires React (global).
@@ -2101,6 +2239,7 @@ function Icon({ name, size = 18, stroke = 1.8, style }) {
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /><line x1="8" y1="3" x2="8" y2="7" /><line x1="16" y1="3" x2="16" y2="7" /></>,
     sparkle: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />,
     inbox: <><path d="M3 12h5l2 3h4l2-3h5" /><path d="M5 5h14l2 7v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z" /></>,
+    folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h6a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
     home: <><path d="M4 11l8-7 8 7" /><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" /></>,
     filter: <polygon points="3 5 21 5 14 12.5 14 19 10 21 10 12.5" />,
     grip: <><circle cx="9" cy="5" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="19" r="1" /></>,
@@ -2190,7 +2329,7 @@ Object.assign(window, {
   STATUS_META
 });
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="auth.jsx">
 /* ============================================================
    TaskFlow — Auth (login / signup / accept-invite), Invite, Profile
    Talks only to window.Backend. Exports to window.
@@ -2568,7 +2707,7 @@ function ProfileModal({ store, onClose, onLogout }) {
 Object.assign(window, { AuthScreen, AcceptInvite, InviteModal, ProfileModal, emailFor });
 
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="views.jsx">
 /* ============================================================
    TaskFlow — views: TaskCard, Board, List, My Tasks, Manager
    Requires React + ui.jsx globals.
@@ -3129,7 +3268,280 @@ Object.assign(window, {
 });
 
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="projects.jsx">
+/* ============================================================
+   TaskFlow — Projects: grid of project cards, per-project board,
+   and the create/edit project modal (managers only).
+   Requires React + ui.jsx + views.jsx (TaskCard) globals.
+   ============================================================ */
+
+const PROJECT_COLORS = ['#D9824F', '#5B8DEF', '#3FA779', '#B06AB3', '#E0A33E', '#D96A6A', '#5FB0A6', '#C9655A'];
+
+// tasks belonging to a project + derived rollups
+function projectStats(project, tasks) {
+  const mine = tasks.filter(t => t.projectId === project.id);
+  const done = mine.filter(t => t.status === 'completed');
+  const open = mine.filter(t => t.status === 'open');
+  const active = mine.filter(t => t.status === 'in_progress' || t.status === 'pending_approval');
+  const overdue = mine.filter(t => t.status !== 'completed' && dueLabel(t.due).state === 'overdue');
+  const pct = mine.length ? Math.round(done.length / mine.length * 100) : 0;
+  const people = [];
+  mine.forEach(t => [t.claimedBy, t.completedBy, t.assignedTo].forEach(uid => {
+    if (uid && !people.includes(uid)) people.push(uid);
+  }));
+  return { tasks: mine, total: mine.length, done, open, active, overdue, pct, people };
+}
+
+// ---------- project card ----------
+function ProjectCard({ project, store }) {
+  const s = projectStats(project, store.tasks);
+  const due = project.due ? dueLabel(project.due) : null;
+  const color = project.color || PROJECT_COLORS[0];
+  return (
+    <button className="tf-proj-card" onClick={() => store.openProject(project.id)}
+      style={{ '--proj': color }}>
+      <span className="tf-proj-stripe"></span>
+      <div className="tf-proj-card-body">
+        <div className="tf-proj-card-head">
+          <span className="tf-proj-dot"></span>
+          <h3 className="tf-proj-name">{project.name}</h3>
+          {s.overdue.length > 0 && <span className="tf-proj-overdue">{s.overdue.length} overdue</span>}
+        </div>
+        {project.description
+          ? <p className="tf-proj-desc">{project.description}</p>
+          : <p className="tf-proj-desc muted">No description</p>}
+
+        <div className="tf-proj-progress">
+          <div className="tf-proj-progress-top">
+            <span>{s.done.length} of {s.total} done</span>
+            <b>{s.pct}%</b>
+          </div>
+          <div className="tf-proj-track"><div className="tf-proj-fill" style={{ width: s.pct + '%' }}></div></div>
+        </div>
+
+        <div className="tf-proj-counts">
+          <div className="tf-proj-count"><span className="tf-proj-count-dot open"></span>{s.open.length} open</div>
+          <div className="tf-proj-count"><span className="tf-proj-count-dot progress"></span>{s.active.length} in progress</div>
+          <div className="tf-proj-count"><span className="tf-proj-count-dot done"></span>{s.done.length} done</div>
+        </div>
+
+        <div className="tf-proj-card-foot">
+          {s.people.length
+            ? <AvatarStack ids={s.people.slice(0, 5)} size={24} />
+            : <span className="tf-proj-noone"><Icon name="users" size={14} stroke={2} />No one yet</span>}
+          {due && <span className={'tf-proj-due ' + due.state}><Icon name="calendar" size={13} stroke={2} />{due.state === 'overdue' ? 'Overdue' : project.due && new Date(project.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ---------- projects grid ----------
+function ProjectsView({ store }) {
+  const projects = store.projects;
+  const isManager = store.me.role === 'manager';
+  return (
+    <div className="tf-projects">
+      <div className="tf-projects-bar">
+        <div className="tf-projects-bar-note">
+          {projects.length
+            ? `${projects.length} project${projects.length > 1 ? 's' : ''} · tap one to see its tasks`
+            : 'Group related tasks into projects.'}
+        </div>
+        {isManager && <Button variant="primary" size="sm" icon="plus" onClick={() => store.openProjectModal()}>New project</Button>}
+      </div>
+
+      {projects.length === 0 ? (
+        <div className="tf-proj-empty">
+          <div className="tf-empty-ic"><Icon name="board" size={30} stroke={1.8} /></div>
+          <h2>No projects yet</h2>
+          <p>Projects are folders for related work — like a client, a launch, or an initiative. Every task can live inside one.</p>
+          {isManager
+            ? <Button variant="primary" size="md" icon="plus" onClick={() => store.openProjectModal()}>Create your first project</Button>
+            : <p className="tf-proj-empty-note">Ask a manager to set up the first project.</p>}
+        </div>
+      ) : (
+        <div className="tf-proj-grid">
+          {projects.map(p => <ProjectCard key={p.id} project={p} store={store} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- per-project board ----------
+const PROJ_COLUMNS = [
+  { status: 'open',             title: 'Open',        hint: 'Up for grabs' },
+  { status: 'in_progress',      title: 'In progress', hint: 'Being worked on' },
+  { status: 'pending_approval', title: 'Needs review',hint: 'Awaiting a manager' },
+  { status: 'completed',        title: 'Completed',   hint: 'Done & logged' },
+];
+
+function ProjectDetailView({ store, project }) {
+  const s = projectStats(project, store.tasks);
+  const isManager = store.me.role === 'manager';
+  const color = project.color || PROJECT_COLORS[0];
+  const due = project.due ? dueLabel(project.due) : null;
+  const byStatus = (st) => s.tasks.filter(t => t.status === st);
+
+  return (
+    <div className="tf-proj-detail" style={{ '--proj': color }}>
+      <div className="tf-proj-detail-head">
+        <button className="tf-icon-btn" title="All projects" onClick={store.closeProject}><Icon name="arrowLeft" size={18} /></button>
+        <span className="tf-proj-dot lg"></span>
+        <div className="tf-proj-detail-id">
+          <h1>{project.name}</h1>
+          <p>{project.description || 'No description'}</p>
+        </div>
+        <div className="tf-proj-detail-acts">
+          {due && <span className={'tf-proj-due chip ' + due.state}><Icon name="calendar" size={14} stroke={2} />{due.full || new Date(project.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+          {isManager && <button className="tf-icon-btn" title="Edit project" onClick={() => store.openProjectModal(project.id)}><Icon name="edit" size={17} /></button>}
+          {isManager && <button className="tf-icon-btn danger" title="Delete project" onClick={() => store.openProjectModal(project.id, true)}><Icon name="trash" size={17} /></button>}
+          <Button variant="primary" size="sm" icon="plus" onClick={() => store.openCreate(project.id)}>New task</Button>
+        </div>
+      </div>
+
+      <div className="tf-proj-detail-meta">
+        <div className="tf-proj-detail-progress">
+          <div className="tf-proj-progress-top"><span>{s.done.length} of {s.total} done</span><b>{s.pct}%</b></div>
+          <div className="tf-proj-track"><div className="tf-proj-fill" style={{ width: s.pct + '%' }}></div></div>
+        </div>
+        <div className="tf-proj-detail-people">
+          {s.people.length ? <AvatarStack ids={s.people} size={28} /> : <span className="tf-proj-noone"><Icon name="users" size={15} stroke={2} />No one on it yet</span>}
+        </div>
+      </div>
+
+      {s.total === 0 ? (
+        <div className="tf-proj-empty inset">
+          <div className="tf-empty-ic"><Icon name="inbox" size={28} stroke={1.8} /></div>
+          <h2>No tasks in this project</h2>
+          <p>Add the first task and it’ll show up on the team board too.</p>
+          <Button variant="primary" size="md" icon="plus" onClick={() => store.openCreate(project.id)}>Add a task</Button>
+        </div>
+      ) : (
+        <div className="tf-board tf-proj-board">
+          {PROJ_COLUMNS.map(col => {
+            const items = byStatus(col.status).slice().sort((a, b) => taskComparator('due')(a, b));
+            return (
+              <section key={col.status} className={'tf-col ' + col.status}>
+                <header className="tf-col-head">
+                  <div>
+                    <h2>{col.title}<span className="tf-col-count">{items.length}</span></h2>
+                    <p>{col.hint}</p>
+                  </div>
+                  {col.status === 'open' && (
+                    <button className="tf-col-add" title="New task" onClick={() => store.openCreate(project.id)}><Icon name="plus" size={16} stroke={2.4} /></button>
+                  )}
+                </header>
+                <div className="tf-col-body">
+                  {items.length === 0 ? <div className="tf-col-empty">Nothing here</div>
+                    : items.map(t => <TaskCard key={t.id} task={t} store={store} />)}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- create / edit project modal ----------
+function ProjectModal({ store }) {
+  const state = store.projectModal; // { id?, confirmDelete? }
+  const editing = state && state.id ? store.projects.find(p => p.id === state.id) : null;
+  const [f, setF] = useState(() => ({
+    name: editing ? editing.name : '',
+    description: editing ? (editing.description || '') : '',
+    color: editing ? (editing.color || PROJECT_COLORS[0]) : PROJECT_COLORS[0],
+    due: editing && editing.due ? new Date(editing.due).toISOString().slice(0, 10) : '',
+  }));
+  const [confirmDel, setConfirmDel] = useState(!!(state && state.confirmDelete && editing));
+  const set = (k, v) => setF(s => ({ ...s, [k]: v }));
+  const valid = f.name.trim().length > 1;
+
+  const submit = () => {
+    if (!valid) return;
+    const payload = {
+      name: f.name.trim(),
+      description: f.description.trim() || null,
+      color: f.color,
+      due: f.due ? new Date(f.due + 'T17:00') : null,
+    };
+    if (editing) store.editProject(editing.id, payload);
+    else store.createProject(payload);
+  };
+
+  return (
+    <Modal onClose={store.closeProjectModal}>
+      <div className="tf-modal-head">
+        <div>
+          <div className="tf-modal-kicker">{editing ? 'Edit project' : 'New project'}</div>
+          <h2>{editing ? 'Update project details' : 'Create a project'}</h2>
+        </div>
+        <button className="tf-icon-btn" onClick={store.closeProjectModal}><Icon name="x" size={18} /></button>
+      </div>
+
+      {confirmDel ? (
+        <div className="tf-complete-body">
+          <div className="tf-approve-hint" style={{ background: 'var(--overdue-soft)', color: '#a23528' }}>
+            <Icon name="trash" size={15} />Deleting <b>{editing.name}</b> won’t delete its tasks — they’ll just move back to “No project”.
+          </div>
+        </div>
+      ) : (
+        <div className="tf-form">
+          <label className="tf-field full">
+            <span>Project name</span>
+            <input autoFocus value={f.name} onChange={e => set('name', e.target.value)} placeholder="e.g. G2G, Sacred Deposits" />
+          </label>
+          <label className="tf-field full">
+            <span>Description <em className="tf-field-opt">— optional</em></span>
+            <textarea rows="2" value={f.description} onChange={e => set('description', e.target.value)} placeholder="What this project is about…" />
+          </label>
+          <label className="tf-field full">
+            <span>Color</span>
+            <div className="tf-proj-swatches">
+              {PROJECT_COLORS.map(c => (
+                <button key={c} type="button" className={'tf-proj-swatch' + (f.color === c ? ' on' : '')}
+                  style={{ background: c }} onClick={() => set('color', c)} aria-label={c}>
+                  {f.color === c && <Icon name="check" size={13} stroke={3} />}
+                </button>
+              ))}
+            </div>
+          </label>
+          <label className="tf-field full">
+            <span>Target date <em className="tf-field-opt">— optional</em></span>
+            <input type="date" value={f.due} onChange={e => set('due', e.target.value)} />
+          </label>
+        </div>
+      )}
+
+      <div className="tf-modal-foot">
+        {editing && !confirmDel
+          ? <button className="tf-btn ghost sm" style={{ color: 'var(--overdue)' }} onClick={() => setConfirmDel(true)}><Icon name="trash" size={15} stroke={2} />Delete</button>
+          : <span className="tf-foot-note">{confirmDel ? '' : 'Managers can create projects for the team.'}</span>}
+        <div className="tf-foot-acts">
+          {confirmDel ? (
+            <>
+              <Button variant="ghost" onClick={() => setConfirmDel(false)}>Cancel</Button>
+              <Button variant="danger" icon="trash" onClick={() => store.deleteProject(editing.id)}>Delete project</Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={store.closeProjectModal}>Cancel</Button>
+              <Button variant="primary" icon={editing ? 'check' : 'plus'} disabled={!valid} onClick={submit}>{editing ? 'Save changes' : 'Create project'}</Button>
+            </>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+Object.assign(window, { ProjectsView, ProjectDetailView, ProjectModal, projectStats, PROJECT_COLORS });
+
+</script>
+<script type="text/babel" data-src="team.jsx">
 /* ============================================================
    TaskFlow — Team (members) view + Team Chat view
    Talk to window.Backend; resolve names via TASKFLOW_DATA.USERS.
@@ -3471,7 +3883,7 @@ function PersonalRow({ it, toggle, remove }) {
 
 Object.assign(window, { TeamView, ChatView, MemberModal, PersonalTasks });
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="panels.jsx">
 /* ============================================================
    TaskFlow — panels: Create modal, Complete modal, Task detail
    slide-over, Notifications, Toast.
@@ -3501,6 +3913,7 @@ function CreateModal({ store }) {
     title: '', desc: '', dept: D.DEPARTMENTS[0], priority: 'medium',
     estimate: '1 hr', due: '2026-06-24', dueTime: '17:00',
     proof: 'note', requiresApproval: false, assignedTo: '', recurrence: 'none',
+    projectId: store.createProjectId || '',
   });
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
@@ -3514,6 +3927,7 @@ function CreateModal({ store }) {
       due: new Date(`${f.due}T${f.dueTime}`),
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
+      projectId: f.projectId || null,
       recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
@@ -3596,6 +4010,16 @@ function CreateModal({ store }) {
           </div>
         </label>
         <label className="tf-field full">
+          <span>Project <em className="tf-field-opt">— optional</em></span>
+          <div className="tf-select">
+            <select value={f.projectId} onChange={e => set('projectId', e.target.value)}>
+              <option value="">No project</option>
+              {store.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+        <label className="tf-field full">
           <span>Repeats</span>
           <div className="tf-select">
             <select value={f.recurrence} onChange={e => set('recurrence', e.target.value)}>
@@ -3636,6 +4060,7 @@ function EditModal({ store }) {
     dept: task.dept, priority: task.priority, estimate: task.estimate,
     due: toDateStr(task.due), dueTime: toTimeStr(task.due),
     proof: task.proof, requiresApproval: !!task.requiresApproval, assignedTo: task.assignedTo || '', recurrence: task.recurrence || 'none',
+    projectId: task.projectId || '',
   }));
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
@@ -3649,6 +4074,7 @@ function EditModal({ store }) {
       due: f.due ? new Date(`${f.due}T${f.dueTime || '17:00'}`) : null,
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
+      projectId: f.projectId || null,
       recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
@@ -3724,6 +4150,16 @@ function EditModal({ store }) {
             <select value={f.assignedTo} onChange={e => set('assignedTo', e.target.value)}>
               <option value="">Anyone can claim it</option>
               {store.members.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+            <Icon name="chevronDown" size={15} />
+          </div>
+        </label>
+        <label className="tf-field full">
+          <span>Project <em className="tf-field-opt">— optional</em></span>
+          <div className="tf-select">
+            <select value={f.projectId} onChange={e => set('projectId', e.target.value)}>
+              <option value="">No project</option>
+              {store.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <Icon name="chevronDown" size={15} />
           </div>
@@ -3878,6 +4314,7 @@ function TaskDetail({ store }) {
   const canEdit = me.role === 'manager' || isCreator;
   const canDelete = me.role === 'manager' || isCreator;
   const assignee = task.assignedTo ? userById(task.assignedTo) : null;
+  const project = task.projectId ? (store.projects || []).find(p => p.id === task.projectId) : null;
 
   const primary = () => {
     if (action.key === 'claim') store.claim(task.id);
@@ -3892,6 +4329,7 @@ function TaskDetail({ store }) {
           <button className="tf-icon-btn" onClick={store.closeDetail}><Icon name="arrowLeft" size={18} /></button>
           <StatusBadge status={task.status} />
           <div className="tf-sheet-head-tags">
+            {project && <button className="tf-proj-pill" style={{ '--proj': project.color || '#D9824F' }} onClick={() => { store.closeDetail(); store.openProject(project.id); }}><span className="tf-proj-pill-dot"></span>{project.name}</button>}
             <PriorityTag priority={task.priority} /><DeptTag dept={task.dept} />
           </div>
           {(canEdit || canDelete) && (
@@ -4066,7 +4504,7 @@ function Toast({ toast }) {
 Object.assign(window, { Modal, CreateModal, EditModal, CompleteModal, TaskDetail, NotifPanel, Toast });
 
 </script>
-<script type="text/babel">
+<script type="text/babel" data-src="app.jsx">
 /* ============================================================
    TaskFlow — App: boot, auth gating, store (state + actions
    backed by window.Backend), top bar, routing, tweaks.
@@ -4115,6 +4553,10 @@ function App() {
 
   // ---- app state ----
   const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
+  const [projectModal, setProjectModal] = useState(null); // null | { id? }
+  const [createProjectId, setCreateProjectId] = useState(null);
   const [view, setView] = useState('board');
   const [layout, setLayout] = useState('board');
   const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false, priority: 'All', assignee: 'All', sort: 'due' });
@@ -4162,6 +4604,7 @@ function App() {
     const [mem, tks] = await Promise.all([Backend.listMembers(), Backend.listTasks()]);
     window.TASKFLOW_DATA.USERS = mem;
     setMembers(mem);setMeId(u.id);setTasks(tks);
+    Backend.listProjects().then(setProjects).catch(() => setProjects([]));
     Backend.listNotifications().then(setNotifs).catch(() => setNotifs([]));
   }
 
@@ -4171,7 +4614,7 @@ function App() {
   };
   const logout = async () => {
     try {await Backend.signOut();} catch (e) {}
-    setMeId(null);setMembers([]);setTasks([]);setProfileOpen(false);setUserMenu(false);setView('board');
+    setMeId(null);setMembers([]);setTasks([]);setProjects([]);setActiveProjectId(null);setProfileOpen(false);setUserMenu(false);setView('board');
     setPhase('auth');
   };
 
@@ -4310,6 +4753,37 @@ function App() {
       try {await Backend.deleteTask(id);flash(`Deleted “${truncate(cur && cur.title || 'task')}”`, 'trash', 'review');}
       catch (e) {onErr(e);}
     },
+
+    // ---- projects (managers create/edit/delete) ----
+    projects, activeProjectId, projectModal,
+    openProject(id) {setActiveProjectId(id);},
+    closeProject() {setActiveProjectId(null);},
+    openProjectModal(id, confirmDelete) {setProjectModal({ id: typeof id === 'string' ? id : null, confirmDelete: !!confirmDelete });},
+    closeProjectModal() {setProjectModal(null);},
+    async createProject(data) {
+      try {
+        const p = await Backend.createProject(data);
+        setProjects((list) => [...list, p]);
+        setProjectModal(null);
+        flash(`Created project “${truncate(p.name)}”`, 'plus');
+      } catch (e) {onErr(e);}
+    },
+    async editProject(id, data) {
+      const cur = projects.find((x) => x.id === id);
+      setProjects((list) => list.map((x) => x.id === id ? { ...x, ...data } : x));
+      setProjectModal(null);
+      try {await Backend.updateProject(id, data);flash(`Updated “${truncate((data.name || (cur && cur.name)) || 'project')}”`, 'edit');}
+      catch (e) {onErr(e);}
+    },
+    async deleteProject(id) {
+      const cur = projects.find((x) => x.id === id);
+      setProjects((list) => list.filter((x) => x.id !== id));
+      setTasks((list) => list.map((x) => x.projectId === id ? { ...x, projectId: null } : x));
+      setProjectModal(null);
+      if (activeProjectId === id) setActiveProjectId(null);
+      try {await Backend.deleteProject(id);flash(`Deleted project “${truncate(cur && cur.name || 'project')}”`, 'trash', 'review');}
+      catch (e) {onErr(e);}
+    },
     async setRole(uid, role) {
       const who = (members.find((x) => x.id === uid) || {}).name || 'Member';
       setMembers((list) => list.map((x) => x.id === uid ? { ...x, role } : x));
@@ -4336,7 +4810,8 @@ function App() {
 
     openDetail(id) {setDetailId(id);setNotifOpen(false);setProfileOpen(false);},
     closeDetail() {setDetailId(null);},
-    openCreate() {setCreateOpen(true);},
+    openCreate(pid) {setCreateProjectId(typeof pid === 'string' ? pid : null);setCreateOpen(true);},
+    createProjectId,
     openEdit(id) {setDetailId(null);setEditId(id);},
     openInvite() {setInviteOpen(true);},
     openMember(uid) {setMemberId(uid);},
@@ -4360,6 +4835,7 @@ function App() {
   const isManager = me.role === 'manager';
   const NAV = [
   { key: 'board', label: t.boardTitle, short: 'Board', icon: 'board' },
+  { key: 'projects', label: 'Projects', short: 'Projects', icon: 'folder' },
   { key: 'mine', label: 'My tasks', short: 'Mine', icon: 'user' },
   { key: 'team', label: 'Team', short: 'Team', icon: 'users' },
   { key: 'manager', label: 'Overview', short: 'Overview', icon: 'board' },
@@ -4376,7 +4852,7 @@ function App() {
 
         <nav className="tf-nav">
           {NAV.map((n) =>
-          <button key={n.key} className={'tf-nav-btn' + (view === n.key ? ' on' : '')} onClick={() => setView(n.key)}>
+          <button key={n.key} className={'tf-nav-btn' + (view === n.key ? ' on' : '')} onClick={() => { setActiveProjectId(null); setView(n.key); }}>
               <Icon name={n.icon} size={16} stroke={2} />{n.label}
               {n.key === 'manager' && isManager && tasks.filter((x) => x.status === 'pending_approval').length > 0 &&
             <span className="tf-nav-badge">{tasks.filter((x) => x.status === 'pending_approval').length}</span>}
@@ -4505,6 +4981,16 @@ function App() {
             <TeamView store={store} />
           </>
         }
+        {view === 'projects' && (() => {
+          const active = activeProjectId && projects.find((p) => p.id === activeProjectId);
+          if (active) return <ProjectDetailView store={store} project={active} />;
+          return (
+            <>
+              <ViewHeader title="Projects" sub="Group related work into projects. Open one to see all of its tasks." />
+              <ProjectsView store={store} />
+            </>
+          );
+        })()}
         {view === 'chat' && <ChatView store={store} />}
       </main>
 
@@ -4512,7 +4998,7 @@ function App() {
         {NAV.map((n) => {
           const pending = n.key === 'manager' && isManager && tasks.filter((x) => x.status === 'pending_approval').length;
           return (
-            <button key={n.key} className={'tf-mobnav-btn' + (view === n.key ? ' on' : '')} onClick={() => setView(n.key)}>
+            <button key={n.key} className={'tf-mobnav-btn' + (view === n.key ? ' on' : '')} onClick={() => { setActiveProjectId(null); setView(n.key); }}>
               <span className="tf-mobnav-ic">
                 <Icon name={n.icon} size={20} stroke={2} />
                 {pending ? <span className="tf-mobnav-badge">{pending}</span> : null}
@@ -4526,6 +5012,7 @@ function App() {
       {editId && <EditModal store={store} />}
       {completeId && <CompleteModal store={store} />}
       {detailId && <TaskDetail store={store} />}
+      {projectModal && <ProjectModal store={store} />}
       {profileOpen && <ProfileModal store={store} onClose={() => setProfileOpen(false)} onLogout={logout} />}
       {memberId && <MemberModal store={store} uid={memberId} onClose={() => setMemberId(null)} />}
       {inviteOpen && <InviteModal store={store} onClose={() => setInviteOpen(false)} />}
