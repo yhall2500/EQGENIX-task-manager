@@ -868,6 +868,82 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
 .tf-proj-pill:hover{border-color:var(--proj);color:var(--proj);}
 .tf-proj-pill-dot{width:8px;height:8px;border-radius:50%;background:var(--proj,var(--primary));flex:none;}
 
+/* ---------- project phases ---------- */
+.tf-proj-phase{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink-2);}
+.tf-proj-phase b{font-weight:800;color:var(--ink);}
+.tf-proj-phase-ic{width:18px;height:18px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:var(--primary-soft);color:var(--primary-deep);flex:none;}
+.tf-proj-phase-ic.done{background:var(--done-soft);color:var(--done);}
+
+.tf-phase-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--primary-deep);
+  background:var(--primary-soft);padding:2px 8px 2px 6px;border-radius:99px;line-height:1;}
+.tf-phase-tag.detail{font-size:11.5px;padding:4px 10px 4px 8px;}
+
+.tf-phasebar{display:flex;align-items:center;gap:12px;padding:2px 24px 16px;}
+.tf-phasebar-scroll{flex:1;min-width:0;display:flex;align-items:center;gap:10px;overflow-x:auto;padding-bottom:3px;}
+.tf-phase-all{flex:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:11px;font-size:13px;
+  font-weight:700;color:var(--ink-2);background:var(--surface);border:1px solid var(--border-2);transition:.13s;white-space:nowrap;}
+.tf-phase-all:hover{background:var(--surface-2);color:var(--ink);}
+.tf-phase-all.on{background:var(--ink);color:#fff;border-color:transparent;}
+.tf-phase-all-n{font-size:11px;font-weight:700;background:rgba(0,0,0,.07);padding:1px 7px;border-radius:99px;}
+.tf-phase-all.on .tf-phase-all-n{background:rgba(255,255,255,.22);}
+.tf-phase-steps{display:flex;align-items:center;flex:none;}
+.tf-phase-conn{width:18px;height:2px;background:var(--border-2);border-radius:2px;flex:none;}
+.tf-phase-conn.done{background:var(--done);}
+.tf-phase-tab{display:flex;align-items:center;gap:9px;padding:7px 14px 7px 8px;border-radius:11px;flex:none;
+  background:var(--surface);border:1px solid var(--border-2);transition:.13s;white-space:nowrap;}
+.tf-phase-tab:hover{background:var(--surface-2);border-color:var(--ink-3);}
+.tf-phase-tab.on{border-color:var(--proj,var(--primary));box-shadow:0 0 0 2px color-mix(in srgb,var(--proj,var(--primary)) 24%,transparent);}
+.tf-phase-num{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;font-weight:800;background:var(--surface-2);border:1px solid var(--border-2);color:var(--ink-2);}
+.tf-phase-tab.current .tf-phase-num{background:var(--proj,var(--primary));border-color:transparent;color:#fff;}
+.tf-phase-tab.complete .tf-phase-num{background:var(--done);border-color:transparent;color:#fff;}
+.tf-phase-tab-main{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;gap:1px;}
+.tf-phase-tab-name{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px;}
+.tf-phase-cur{font-style:normal;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--primary-deep);background:var(--primary-soft);padding:2px 6px;border-radius:99px;}
+.tf-phase-tab-meta{font-size:11px;color:var(--ink-3);font-weight:600;}
+.tf-phase-tab.unphased .tf-phase-num{background:var(--surface-2);color:var(--ink-3);}
+.tf-phase-edit{flex:none;}
+
+.tf-phase-setup{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 24px 16px;
+  padding:13px 16px;background:var(--surface);border:1px dashed var(--border-2);border-radius:var(--r-lg);}
+.tf-phase-setup-txt{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);line-height:1.45;}
+.tf-phase-setup-txt svg{color:var(--primary);flex:none;}
+.tf-phase-setup-txt b{color:var(--ink);font-weight:700;}
+
+.tf-phase-edit-body{padding:18px 22px;}
+.tf-phase-edit-note{margin:0 0 16px;font-size:12.5px;color:var(--ink-2);line-height:1.5;}
+.tf-phase-edit-list{display:flex;flex-direction:column;gap:8px;}
+.tf-phase-edit-row{display:flex;align-items:center;gap:10px;}
+.tf-phase-edit-num{width:24px;height:24px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;background:var(--primary-soft);color:var(--primary-deep);}
+.tf-phase-edit-reorder{display:flex;flex-direction:column;gap:2px;flex:none;}
+.tf-phase-edit-move{width:22px;height:15px;display:flex;align-items:center;justify-content:center;border-radius:5px;
+  color:var(--ink-3);transition:.12s;}
+.tf-phase-edit-move:hover:not(:disabled){background:var(--surface-2);color:var(--ink);}
+.tf-phase-edit-move:disabled{opacity:.3;cursor:not-allowed;}
+.tf-phase-edit-input{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border-2);border-radius:9px;
+  padding:9px 12px;outline:none;font-size:13.5px;font-weight:600;transition:.13s;}
+.tf-phase-edit-input:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px var(--primary-soft);}
+.tf-phase-edit-count{flex:none;font-size:11px;font-weight:700;color:var(--ink-2);background:var(--surface-2);
+  border:1px solid var(--border);min-width:22px;height:22px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 6px;}
+.tf-phase-edit-del{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink-3);transition:.12s;flex:none;}
+.tf-phase-edit-del:hover{background:var(--overdue-soft);color:var(--overdue);}
+.tf-phase-edit-add{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:10px 12px;width:100%;
+  border-radius:9px;border:1px dashed var(--border-2);background:var(--surface-2);color:var(--ink-2);font-size:13px;font-weight:600;transition:.13s;}
+.tf-phase-edit-add:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft);}
+.tf-phase-edit-warn{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 13px;background:var(--progress-soft);
+  color:#9a6b18;border-radius:var(--r);font-size:12px;font-weight:600;line-height:1.45;}
+.tf-phase-edit-warn b{font-weight:800;}
+
+@media (max-width:760px){
+  .tf-phasebar{flex-direction:column;align-items:stretch;padding:2px 12px 14px;}
+  .tf-phase-edit{align-self:flex-end;}
+  .tf-phase-setup{flex-direction:column;align-items:flex-start;margin:0 12px 14px;}
+}
+
 @media (max-width:760px){
   .tf-projects{padding:0 12px 24px;}
   .tf-proj-grid{grid-template-columns:1fr;}
@@ -994,7 +1070,7 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script data-src="config.js">
+<script>
 /* ============================================================
    TaskFlow — backend configuration
    ------------------------------------------------------------
@@ -1017,7 +1093,7 @@ window.TASKFLOW_CONFIG = {
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script data-src="data.js">
+<script>
 /* ============================================================
    TaskFlow — mock data + helpers (plain JS, attached to window)
    "Today" is anchored to Mon Jun 22 2026 for stable relative dates.
@@ -1047,6 +1123,28 @@ window.TASKFLOW_CONFIG = {
     medium: { label: 'Medium', rank: 1 },
     low:    { label: 'Low',    rank: 0 },
   };
+
+  // ---- Project phases --------------------------------------
+  // Every new project starts with these 5; managers can rename,
+  // add, remove & reorder them per-project. A task belongs to at
+  // most one phase within its project.
+  const DEFAULT_PHASES = [
+    { id: 'planning', name: 'Planning',       hint: 'Research, strategy, budget, timeline' },
+    { id: 'creation', name: 'Creation',       hint: 'Design, writing, building, setup' },
+    { id: 'review',   name: 'Review',         hint: 'Check work, request edits, approvals' },
+    { id: 'launch',   name: 'Launch',         hint: 'Publish, send, deliver, close out' },
+    { id: 'followup', name: 'Follow-Up',      hint: 'Recap, results, next steps' },
+  ];
+
+  // ---- Demo project (seeds the local demo so phases are visible) ----
+  const PROJECTS = [
+    {
+      id: 'proj_acme', name: 'Acme site relaunch',
+      description: 'Rebuild and ship the Acme marketing site — from kickoff research through launch and the first results recap.',
+      color: '#5B8DEF', due: ahead(9 * D),
+      phases: DEFAULT_PHASES.map(p => ({ ...p })),
+    },
+  ];
 
   // ---- Tasks ------------------------------------------------
   // status: open | in_progress | pending_approval | completed
@@ -1210,8 +1308,18 @@ window.TASKFLOW_CONFIG = {
     },
   ];
 
+  // Tag a few demo tasks into the Acme project + phases so the
+  // feature has something to show on first run.
+  const tag = (i, phaseId) => { if (TASKS[i]) { TASKS[i].projectId = 'proj_acme'; TASKS[i].phaseId = phaseId; } };
+  tag(6, 'planning');   // Reconcile expenses → stands in as budget planning
+  tag(9, 'planning');   // Book offsite venue → planning
+  tag(1, 'creation');   // Polish the pitch deck → creation
+  tag(8, 'creation');   // Photograph product samples → creation
+  tag(2, 'review');     // Fix footer link → review
+  tag(7, 'review');     // Update contract terms → review
+
   window.TASKFLOW_DATA = {
-    NOW, USERS, DEPARTMENTS, PRIORITY,
+    NOW, USERS, DEPARTMENTS, PRIORITY, DEFAULT_PHASES, PROJECTS,
     TASKS,
     newId: id,
     business: 'Brightside Studio',
@@ -1219,7 +1327,7 @@ window.TASKFLOW_CONFIG = {
 })();
 
 </script>
-<script data-src="backend.js">
+<script>
 /* ============================================================
    TaskFlow — Backend abstraction (plain JS, window.Backend)
    Two implementations behind one async API:
@@ -1265,7 +1373,7 @@ window.TASKFLOW_CONFIG = {
         c.activity = (c.activity || []).map(x => ({ ...x, at: x.at instanceof Date ? x.at.toISOString() : x.at }));
         return c;
       });
-      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, projects: [], invites: [], messages: [], personal: [], notifications: [], sessionUserId: null, seeded: true };
+      return { workspace: { name: (D.business || 'TaskFlow') + ' workspace' }, members, tasks, projects: (D.PROJECTS || []).map(p => ({ ...p, due: p.due instanceof Date ? p.due.toISOString() : p.due, archived: false, createdBy: (members[0] || {}).id || null, createdAt: new Date().toISOString() })), invites: [], messages: [], personal: [], notifications: [], sessionUserId: null, seeded: true };
     }
     function read() {
       try { const r = localStorage.getItem(LKEY); if (r) { const d = JSON.parse(r); if (!d.messages) d.messages = []; if (!d.personal) d.personal = []; if (!d.notifications) d.notifications = []; if (!d.projects) d.projects = []; return d; } } catch (e) {}
@@ -1335,9 +1443,11 @@ window.TASKFLOW_CONFIG = {
       },
       createProject(data) {
         const db = read(); const now = new Date().toISOString();
+        const defaults = (window.TASKFLOW_DATA.DEFAULT_PHASES || []).map(p => ({ ...p }));
         const p = { id: rid('proj_'), name: data.name, description: data.description || null,
           color: data.color || COLORS[(db.projects || []).length % COLORS.length],
           due: data.due ? new Date(data.due).toISOString() : null,
+          phases: data.phases || defaults,
           archived: false, createdBy: db.sessionUserId, createdAt: now };
         db.projects = db.projects || []; db.projects.push(p); write(db);
         return Promise.resolve({ ...p, due: p.due ? new Date(p.due) : null, createdAt: new Date(p.createdAt) });
@@ -1424,7 +1534,7 @@ window.TASKFLOW_CONFIG = {
     // map db row (snake_case) → app task shape (camelCase)
     const fromRow = (r) => reviveTask({
       id: r.id, title: r.title, desc: r.description, dept: r.dept, priority: r.priority, estimate: r.estimate,
-      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to, recurrence: r.recurrence, projectId: r.project_id,
+      due: r.due, status: r.status, requiresApproval: r.requires_approval, proof: r.proof, assignedTo: r.assigned_to, recurrence: r.recurrence, projectId: r.project_id, phaseId: r.phase_id,
       createdBy: r.created_by, createdAt: r.created_at, claimedBy: r.claimed_by, claimedAt: r.claimed_at,
       completedBy: r.completed_by, completedAt: r.completed_at, approvedBy: r.approved_by, approvedAt: r.approved_at,
       completionNote: r.completion_note, proofUrl: r.proof_url, comments: r.comments || [], activity: r.activity || [],
@@ -1432,7 +1542,7 @@ window.TASKFLOW_CONFIG = {
     // map app patch → db columns
     const toRow = (d) => {
       const m = { title: 'title', desc: 'description', dept: 'dept', priority: 'priority', estimate: 'estimate',
-        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to', recurrence: 'recurrence', projectId: 'project_id',
+        due: 'due', status: 'status', requiresApproval: 'requires_approval', proof: 'proof', assignedTo: 'assigned_to', recurrence: 'recurrence', projectId: 'project_id', phaseId: 'phase_id',
         claimedBy: 'claimed_by', claimedAt: 'claimed_at', completedBy: 'completed_by', completedAt: 'completed_at',
         approvedBy: 'approved_by', approvedAt: 'approved_at', completionNote: 'completion_note', proofUrl: 'proof_url', comments: 'comments', activity: 'activity' };
       const out = {};
@@ -1442,7 +1552,7 @@ window.TASKFLOW_CONFIG = {
     };
     let profileCache = null;
     const projFromRow = (r) => r ? ({ id: r.id, name: r.name, description: r.description, color: r.color,
-      due: r.due ? new Date(r.due) : null, archived: r.archived,
+      due: r.due ? new Date(r.due) : null, archived: r.archived, phases: r.phases || null,
       createdBy: r.created_by, createdAt: r.created_at ? new Date(r.created_at) : null }) : null;
     async function myProfile() {
       const { data: { user } } = await sb.auth.getUser();
@@ -1505,8 +1615,9 @@ window.TASKFLOW_CONFIG = {
       },
       async createProject(data) {
         const { data: { user } } = await sb.auth.getUser();
+        const defaults = (window.TASKFLOW_DATA.DEFAULT_PHASES || []).map(p => ({ ...p }));
         const row = { name: data.name, description: data.description || null, color: data.color || null,
-          due: data.due ? new Date(data.due).toISOString() : null, created_by: user.id };
+          due: data.due ? new Date(data.due).toISOString() : null, phases: data.phases || defaults, created_by: user.id };
         const { data: ins, error } = await sb.from('projects').insert(row).select().single();
         if (error) throw new Error(error.message); return projFromRow(ins);
       },
@@ -1516,6 +1627,7 @@ window.TASKFLOW_CONFIG = {
         if (patch.description !== undefined) row.description = patch.description;
         if (patch.color !== undefined) row.color = patch.color;
         if (patch.due !== undefined) row.due = patch.due ? new Date(patch.due).toISOString() : null;
+        if (patch.phases !== undefined) row.phases = patch.phases;
         if (patch.archived !== undefined) row.archived = patch.archived;
         const { data, error } = await sb.from('projects').update(row).eq('id', id).select().single();
         if (error) throw new Error(error.message); return projFromRow(data);
@@ -1623,7 +1735,7 @@ window.TASKFLOW_CONFIG = {
 })();
 
 </script>
-<script type="text/babel" data-src="tweaks-panel.jsx">
+<script type="text/babel">
 // @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
 
 /* BEGIN USAGE */
@@ -2167,7 +2279,7 @@ Object.assign(window, {
 });
 
 </script>
-<script type="text/babel" data-src="ui.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — shared UI: helpers, icons, avatars, badges, button
    Exports to window. Requires React (global).
@@ -2329,7 +2441,7 @@ Object.assign(window, {
   STATUS_META
 });
 </script>
-<script type="text/babel" data-src="auth.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — Auth (login / signup / accept-invite), Invite, Profile
    Talks only to window.Backend. Exports to window.
@@ -2707,7 +2819,7 @@ function ProfileModal({ store, onClose, onLogout }) {
 Object.assign(window, { AuthScreen, AcceptInvite, InviteModal, ProfileModal, emailFor });
 
 </script>
-<script type="text/babel" data-src="views.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — views: TaskCard, Board, List, My Tasks, Manager
    Requires React + ui.jsx globals.
@@ -2764,6 +2876,8 @@ function TaskCard({ task, store }) {
   const doer = userById(task.completedBy);
   const assignee = task.assignedTo ? userById(task.assignedTo) : null;
   const overdue = rawDue.state === 'overdue' && !completed;
+  const project = task.projectId ? (store.projects || []).find(p => p.id === task.projectId) : null;
+  const phase = project && project.phases && task.phaseId ? project.phases.find(p => p.id === task.phaseId) : null;
 
   const onAction = (e) => {
     e.stopPropagation();
@@ -2778,6 +2892,7 @@ function TaskCard({ task, store }) {
       <div className="tf-card-top">
         <PriorityTag priority={task.priority} />
         <DeptTag dept={task.dept} />
+        {phase && <span className="tf-phase-tag"><Icon name="flag" size={10} stroke={2.4} />{phase.name}</span>}
       </div>
       <h3 className="tf-card-title">{task.title}</h3>
       <p className="tf-card-desc">{task.desc}</p>
@@ -3276,7 +3391,7 @@ Object.assign(window, {
 });
 
 </script>
-<script type="text/babel" data-src="projects.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — Projects: grid of project cards, per-project board,
    and the create/edit project modal (managers only).
@@ -3284,6 +3399,24 @@ Object.assign(window, {
    ============================================================ */
 
 const PROJECT_COLORS = ['#D9824F', '#5B8DEF', '#3FA779', '#B06AB3', '#E0A33E', '#D96A6A', '#5FB0A6', '#C9655A'];
+const genPhaseId = () => 'ph_' + Math.random().toString(36).slice(2, 8);
+const defaultPhases = () => (window.TASKFLOW_DATA.DEFAULT_PHASES || []).map(p => ({ ...p }));
+
+// tasks + rollups for one phase of a project
+function phaseStat(tasks, projectId, phaseId) {
+  const mine = tasks.filter(t => t.projectId === projectId && t.phaseId === phaseId);
+  const done = mine.filter(t => t.status === 'completed');
+  return { total: mine.length, done: done.length, pct: mine.length ? Math.round(done.length / mine.length * 100) : 0 };
+}
+// the first phase (in order) that has tasks but isn't fully done = where the project "is"
+function currentPhase(project, tasks) {
+  const phases = project.phases || [];
+  for (let i = 0; i < phases.length; i++) {
+    const st = phaseStat(tasks, project.id, phases[i].id);
+    if (st.total > 0 && st.done < st.total) return { phase: phases[i], index: i };
+  }
+  return null;
+}
 
 // tasks belonging to a project + derived rollups
 function projectStats(project, tasks) {
@@ -3305,6 +3438,9 @@ function ProjectCard({ project, store }) {
   const s = projectStats(project, store.tasks);
   const due = project.due ? dueLabel(project.due) : null;
   const color = project.color || PROJECT_COLORS[0];
+  const phases = project.phases || [];
+  const cur = phases.length ? currentPhase(project, store.tasks) : null;
+  const allDone = phases.length && s.total > 0 && s.done.length === s.total;
   return (
     <button className="tf-proj-card" onClick={() => store.openProject(project.id)}
       style={{ '--proj': color }}>
@@ -3326,6 +3462,16 @@ function ProjectCard({ project, store }) {
           </div>
           <div className="tf-proj-track"><div className="tf-proj-fill" style={{ width: s.pct + '%' }}></div></div>
         </div>
+
+        {phases.length > 0 && (
+          <div className="tf-proj-phase">
+            {allDone
+              ? <><span className="tf-proj-phase-ic done"><Icon name="check" size={11} stroke={3} /></span>All phases complete</>
+              : cur
+                ? <><span className="tf-proj-phase-ic"><Icon name="flag" size={11} stroke={2.4} /></span>Phase {cur.index + 1} · <b>{cur.phase.name}</b></>
+                : <><span className="tf-proj-phase-ic"><Icon name="flag" size={11} stroke={2.4} /></span><span className="muted">{phases.length} phases · not started</span></>}
+          </div>
+        )}
 
         <div className="tf-proj-counts">
           <div className="tf-proj-count"><span className="tf-proj-count-dot open"></span>{s.open.length} open</div>
@@ -3390,7 +3536,17 @@ function ProjectDetailView({ store, project }) {
   const isManager = store.me.role === 'manager';
   const color = project.color || PROJECT_COLORS[0];
   const due = project.due ? dueLabel(project.due) : null;
-  const byStatus = (st) => s.tasks.filter(t => t.status === st);
+  const phases = project.phases || [];
+  const [sel, setSel] = useState('all'); // 'all' | phaseId | 'none'
+  const cur = phases.length ? currentPhase(project, store.tasks) : null;
+
+  // tasks in scope for the board, honouring the selected phase
+  const scoped = sel === 'all' ? s.tasks
+    : sel === 'none' ? s.tasks.filter(t => !t.phaseId || !phases.some(p => p.id === t.phaseId))
+    : s.tasks.filter(t => t.phaseId === sel);
+  const byStatus = (st) => scoped.filter(t => t.status === st).slice().sort((a, b) => taskComparator('due')(a, b));
+  const unphased = s.tasks.filter(t => !t.phaseId || !phases.some(p => p.id === t.phaseId));
+  const newTaskPhase = (sel !== 'all' && sel !== 'none') ? sel : (cur ? cur.phase.id : (phases[0] && phases[0].id));
 
   return (
     <div className="tf-proj-detail" style={{ '--proj': color }}>
@@ -3405,7 +3561,7 @@ function ProjectDetailView({ store, project }) {
           {due && <span className={'tf-proj-due chip ' + due.state}><Icon name="calendar" size={14} stroke={2} />{due.full || new Date(project.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
           {isManager && <button className="tf-icon-btn" title="Edit project" onClick={() => store.openProjectModal(project.id)}><Icon name="edit" size={17} /></button>}
           {isManager && <button className="tf-icon-btn danger" title="Delete project" onClick={() => store.openProjectModal(project.id, true)}><Icon name="trash" size={17} /></button>}
-          <Button variant="primary" size="sm" icon="plus" onClick={() => store.openCreate(project.id)}>New task</Button>
+          <Button variant="primary" size="sm" icon="plus" onClick={() => store.openCreate(project.id, newTaskPhase)}>New task</Button>
         </div>
       </div>
 
@@ -3419,17 +3575,66 @@ function ProjectDetailView({ store, project }) {
         </div>
       </div>
 
+      {/* ---- phases ---- */}
+      {phases.length > 0 ? (
+        <div className="tf-phasebar">
+          <div className="tf-phasebar-scroll">
+            <button className={'tf-phase-all' + (sel === 'all' ? ' on' : '')} onClick={() => setSel('all')}>
+              All phases<span className="tf-phase-all-n">{s.total}</span>
+            </button>
+            <div className="tf-phase-steps">
+              {phases.map((ph, i) => {
+                const st = phaseStat(store.tasks, project.id, ph.id);
+                const complete = st.total > 0 && st.done === st.total;
+                const isCur = cur && cur.phase.id === ph.id;
+                return (
+                  <React.Fragment key={ph.id}>
+                    {i > 0 && <span className={'tf-phase-conn' + (phaseStat(store.tasks, project.id, phases[i - 1].id).total > 0 && phaseStat(store.tasks, project.id, phases[i - 1].id).done === phaseStat(store.tasks, project.id, phases[i - 1].id).total ? ' done' : '')}></span>}
+                    <button className={'tf-phase-tab' + (sel === ph.id ? ' on' : '') + (complete ? ' complete' : '') + (isCur ? ' current' : '')}
+                      onClick={() => setSel(sel === ph.id ? 'all' : ph.id)} title={ph.hint || ph.name}>
+                      <span className="tf-phase-num">{complete ? <Icon name="check" size={13} stroke={3} /> : i + 1}</span>
+                      <span className="tf-phase-tab-main">
+                        <span className="tf-phase-tab-name">{ph.name}{isCur && <em className="tf-phase-cur">Current</em>}</span>
+                        <span className="tf-phase-tab-meta">{st.total ? `${st.done}/${st.total} done` : 'No tasks'}</span>
+                      </span>
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+              {unphased.length > 0 && (
+                <>
+                  <span className="tf-phase-conn"></span>
+                  <button className={'tf-phase-tab unphased' + (sel === 'none' ? ' on' : '')} onClick={() => setSel(sel === 'none' ? 'all' : 'none')}>
+                    <span className="tf-phase-num"><Icon name="inbox" size={13} stroke={2} /></span>
+                    <span className="tf-phase-tab-main">
+                      <span className="tf-phase-tab-name">Unassigned</span>
+                      <span className="tf-phase-tab-meta">{unphased.length} task{unphased.length > 1 ? 's' : ''}</span>
+                    </span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          {isManager && <button className="tf-btn ghost sm tf-phase-edit" onClick={() => store.openPhases(project.id)}><Icon name="edit" size={14} stroke={2} />Edit phases</button>}
+        </div>
+      ) : isManager ? (
+        <div className="tf-phase-setup">
+          <div className="tf-phase-setup-txt"><Icon name="flag" size={15} stroke={2} /><span>Break this project into <b>phases</b> — Planning, Creation, Review, Launch, Follow-Up — so it reads like a plan, not a pile of tasks.</span></div>
+          <Button variant="primary" size="sm" icon="plus" onClick={() => store.editProject(project.id, { phases: defaultPhases() })}>Add phases</Button>
+        </div>
+      ) : null}
+
       {s.total === 0 ? (
         <div className="tf-proj-empty inset">
           <div className="tf-empty-ic"><Icon name="inbox" size={28} stroke={1.8} /></div>
           <h2>No tasks in this project</h2>
           <p>Add the first task and it’ll show up on the team board too.</p>
-          <Button variant="primary" size="md" icon="plus" onClick={() => store.openCreate(project.id)}>Add a task</Button>
+          <Button variant="primary" size="md" icon="plus" onClick={() => store.openCreate(project.id, newTaskPhase)}>Add a task</Button>
         </div>
       ) : (
         <div className="tf-board tf-proj-board">
           {PROJ_COLUMNS.map(col => {
-            const items = byStatus(col.status).slice().sort((a, b) => taskComparator('due')(a, b));
+            const items = byStatus(col.status);
             return (
               <section key={col.status} className={'tf-col ' + col.status}>
                 <header className="tf-col-head">
@@ -3438,7 +3643,7 @@ function ProjectDetailView({ store, project }) {
                     <p>{col.hint}</p>
                   </div>
                   {col.status === 'open' && (
-                    <button className="tf-col-add" title="New task" onClick={() => store.openCreate(project.id)}><Icon name="plus" size={16} stroke={2.4} /></button>
+                    <button className="tf-col-add" title="New task" onClick={() => store.openCreate(project.id, newTaskPhase)}><Icon name="plus" size={16} stroke={2.4} /></button>
                   )}
                 </header>
                 <div className="tf-col-body">
@@ -3451,6 +3656,77 @@ function ProjectDetailView({ store, project }) {
         </div>
       )}
     </div>
+  );
+}
+
+// ---------- manage phases modal (managers) ----------
+function PhasesModal({ store, projectId }) {
+  const project = store.projects.find(p => p.id === projectId);
+  const [phases, setPhases] = useState(() => (project && project.phases ? project.phases.map(p => ({ ...p })) : defaultPhases()));
+  const rename = (i, v) => setPhases(ph => ph.map((p, j) => j === i ? { ...p, name: v } : p));
+  const remove = (i) => setPhases(ph => ph.filter((_, j) => j !== i));
+  const move = (i, dir) => setPhases(ph => {
+    const a = ph.slice(); const j = i + dir;
+    if (j < 0 || j >= a.length) return a;
+    [a[i], a[j]] = [a[j], a[i]]; return a;
+  });
+  const add = () => setPhases(ph => [...ph, { id: genPhaseId(), name: '', hint: '' }]);
+  const count = (id) => store.tasks.filter(t => t.projectId === projectId && t.phaseId === id).length;
+  const valid = phases.length > 0 && phases.every(p => p.name.trim().length > 0);
+  const orphaned = store.tasks.filter(t => t.projectId === projectId && t.phaseId && !phases.some(p => p.id === t.phaseId)).length;
+
+  const save = () => {
+    if (!valid) return;
+    store.editProject(projectId, { phases: phases.map(p => ({ ...p, name: p.name.trim() })) });
+    store.closePhases();
+  };
+
+  if (!project) return null;
+
+  return (
+    <Modal onClose={store.closePhases}>
+      <div className="tf-modal-head">
+        <div>
+          <div className="tf-modal-kicker">{project.name}</div>
+          <h2>Project phases</h2>
+        </div>
+        <button className="tf-icon-btn" onClick={store.closePhases}><Icon name="x" size={18} /></button>
+      </div>
+
+      <div className="tf-phase-edit-body">
+        <p className="tf-phase-edit-note">Phases are the stages this project moves through. Rename, reorder, add or remove them — every task can live in one phase.</p>
+        <div className="tf-phase-edit-list">
+          {phases.map((p, i) => {
+            const n = count(p.id);
+            return (
+              <div key={p.id} className="tf-phase-edit-row">
+                <span className="tf-phase-edit-num">{i + 1}</span>
+                <div className="tf-phase-edit-reorder">
+                  <button className="tf-phase-edit-move" disabled={i === 0} title="Move up" onClick={() => move(i, -1)}><Icon name="chevronDown" size={14} stroke={2.4} style={{ transform: 'rotate(180deg)' }} /></button>
+                  <button className="tf-phase-edit-move" disabled={i === phases.length - 1} title="Move down" onClick={() => move(i, 1)}><Icon name="chevronDown" size={14} stroke={2.4} /></button>
+                </div>
+                <input className="tf-phase-edit-input" value={p.name} placeholder="Phase name"
+                  onChange={e => rename(i, e.target.value)} />
+                {n > 0 && <span className="tf-phase-edit-count" title={n + ' task' + (n > 1 ? 's' : '') + ' in this phase'}>{n}</span>}
+                <button className="tf-phase-edit-del" title="Remove phase" onClick={() => remove(i)}><Icon name="trash" size={15} /></button>
+              </div>
+            );
+          })}
+        </div>
+        <button className="tf-phase-edit-add" onClick={add}><Icon name="plus" size={15} stroke={2.4} />Add a phase</button>
+        {orphaned > 0 && (
+          <div className="tf-phase-edit-warn"><Icon name="inbox" size={14} stroke={2} />{orphaned} task{orphaned > 1 ? 's' : ''} in removed phases will move to <b>Unassigned</b> — nothing is deleted.</div>
+        )}
+      </div>
+
+      <div className="tf-modal-foot">
+        <button className="tf-btn ghost sm" onClick={() => setPhases(defaultPhases())}><Icon name="undo" size={14} stroke={2} />Reset to default 5</button>
+        <div className="tf-foot-acts">
+          <Button variant="ghost" onClick={store.closePhases}>Cancel</Button>
+          <Button variant="primary" icon="check" disabled={!valid} onClick={save}>Save phases</Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -3546,10 +3822,10 @@ function ProjectModal({ store }) {
   );
 }
 
-Object.assign(window, { ProjectsView, ProjectDetailView, ProjectModal, projectStats, PROJECT_COLORS });
+Object.assign(window, { ProjectsView, ProjectDetailView, ProjectModal, PhasesModal, projectStats, phaseStat, currentPhase, PROJECT_COLORS });
 
 </script>
-<script type="text/babel" data-src="team.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — Team (members) view + Team Chat view
    Talk to window.Backend; resolve names via TASKFLOW_DATA.USERS.
@@ -3891,7 +4167,7 @@ function PersonalRow({ it, toggle, remove }) {
 
 Object.assign(window, { TeamView, ChatView, MemberModal, PersonalTasks });
 </script>
-<script type="text/babel" data-src="panels.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — panels: Create modal, Complete modal, Task detail
    slide-over, Notifications, Toast.
@@ -3922,9 +4198,12 @@ function CreateModal({ store }) {
     estimate: '1 hr', due: '2026-06-24', dueTime: '17:00',
     proof: 'note', requiresApproval: false, assignedTo: '', recurrence: 'none',
     projectId: store.createProjectId || '',
+    phaseId: store.createPhaseId || '',
   });
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
+  const selProj = f.projectId ? store.projects.find(p => p.id === f.projectId) : null;
+  const phaseOpts = (selProj && selProj.phases) || [];
 
   const submit = () => {
     if (!valid) return;
@@ -3936,6 +4215,7 @@ function CreateModal({ store }) {
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
       projectId: f.projectId || null,
+      phaseId: f.projectId ? (f.phaseId || null) : null,
       recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
@@ -4020,13 +4300,25 @@ function CreateModal({ store }) {
         <label className="tf-field full">
           <span>Project <em className="tf-field-opt">— optional</em></span>
           <div className="tf-select">
-            <select value={f.projectId} onChange={e => set('projectId', e.target.value)}>
+            <select value={f.projectId} onChange={e => setF(s => ({ ...s, projectId: e.target.value, phaseId: '' }))}>
               <option value="">No project</option>
               {store.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <Icon name="chevronDown" size={15} />
           </div>
         </label>
+        {phaseOpts.length > 0 && (
+          <label className="tf-field full">
+            <span>Phase</span>
+            <div className="tf-select">
+              <select value={f.phaseId} onChange={e => set('phaseId', e.target.value)}>
+                <option value="">No phase yet</option>
+                {phaseOpts.map((p, i) => <option key={p.id} value={p.id}>{i + 1}. {p.name}</option>)}
+              </select>
+              <Icon name="chevronDown" size={15} />
+            </div>
+          </label>
+        )}
         <label className="tf-field full">
           <span>Repeats</span>
           <div className="tf-select">
@@ -4069,9 +4361,12 @@ function EditModal({ store }) {
     due: toDateStr(task.due), dueTime: toTimeStr(task.due),
     proof: task.proof, requiresApproval: !!task.requiresApproval, assignedTo: task.assignedTo || '', recurrence: task.recurrence || 'none',
     projectId: task.projectId || '',
+    phaseId: task.phaseId || '',
   }));
   const set = (k, v) => setF(s => ({ ...s, [k]: v }));
   const valid = f.title.trim().length > 2;
+  const selProj = f.projectId ? store.projects.find(p => p.id === f.projectId) : null;
+  const phaseOpts = (selProj && selProj.phases) || [];
 
   const submit = () => {
     if (!valid) return;
@@ -4083,6 +4378,7 @@ function EditModal({ store }) {
       proof: f.proof, requiresApproval: f.requiresApproval,
       assignedTo: f.assignedTo || null,
       projectId: f.projectId || null,
+      phaseId: f.projectId ? (f.phaseId || null) : null,
       recurrence: f.recurrence === 'none' ? null : f.recurrence,
     });
   };
@@ -4165,13 +4461,25 @@ function EditModal({ store }) {
         <label className="tf-field full">
           <span>Project <em className="tf-field-opt">— optional</em></span>
           <div className="tf-select">
-            <select value={f.projectId} onChange={e => set('projectId', e.target.value)}>
+            <select value={f.projectId} onChange={e => setF(s => ({ ...s, projectId: e.target.value, phaseId: '' }))}>
               <option value="">No project</option>
               {store.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <Icon name="chevronDown" size={15} />
           </div>
         </label>
+        {phaseOpts.length > 0 && (
+          <label className="tf-field full">
+            <span>Phase</span>
+            <div className="tf-select">
+              <select value={f.phaseId} onChange={e => set('phaseId', e.target.value)}>
+                <option value="">No phase yet</option>
+                {phaseOpts.map((p, i) => <option key={p.id} value={p.id}>{i + 1}. {p.name}</option>)}
+              </select>
+              <Icon name="chevronDown" size={15} />
+            </div>
+          </label>
+        )}
         <label className="tf-field full">
           <span>Repeats</span>
           <div className="tf-select">
@@ -4325,6 +4633,7 @@ function TaskDetail({ store }) {
   const canDelete = me.role === 'manager' || isCreator;
   const assignee = task.assignedTo ? userById(task.assignedTo) : null;
   const project = task.projectId ? (store.projects || []).find(p => p.id === task.projectId) : null;
+  const phase = project && project.phases && task.phaseId ? project.phases.find(p => p.id === task.phaseId) : null;
 
   const primary = () => {
     if (action.key === 'claim') store.claim(task.id);
@@ -4340,6 +4649,7 @@ function TaskDetail({ store }) {
           <StatusBadge status={task.status} />
           <div className="tf-sheet-head-tags">
             {project && <button className="tf-proj-pill" style={{ '--proj': project.color || '#D9824F' }} onClick={() => { store.closeDetail(); store.openProject(project.id); }}><span className="tf-proj-pill-dot"></span>{project.name}</button>}
+            {phase && <span className="tf-phase-tag detail"><Icon name="flag" size={11} stroke={2.4} />{phase.name}</span>}
             <PriorityTag priority={task.priority} /><DeptTag dept={task.dept} />
           </div>
           {(canEdit || canDelete) && (
@@ -4514,7 +4824,7 @@ function Toast({ toast }) {
 Object.assign(window, { Modal, CreateModal, EditModal, CompleteModal, TaskDetail, NotifPanel, Toast });
 
 </script>
-<script type="text/babel" data-src="app.jsx">
+<script type="text/babel">
 /* ============================================================
    TaskFlow — App: boot, auth gating, store (state + actions
    backed by window.Backend), top bar, routing, tweaks.
@@ -4566,7 +4876,9 @@ function App() {
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [projectModal, setProjectModal] = useState(null); // null | { id? }
+  const [phasesFor, setPhasesFor] = useState(null); // projectId whose phases are being managed
   const [createProjectId, setCreateProjectId] = useState(null);
+  const [createPhaseId, setCreatePhaseId] = useState(null);
   const [view, setView] = useState('board');
   const [layout, setLayout] = useState('board');
   const [filters, setFilters] = useState({ q: '', dept: 'All', mine: false, priority: 'All', assignee: 'All', sort: 'due' });
@@ -4770,6 +5082,9 @@ function App() {
     closeProject() {setActiveProjectId(null);},
     openProjectModal(id, confirmDelete) {setProjectModal({ id: typeof id === 'string' ? id : null, confirmDelete: !!confirmDelete });},
     closeProjectModal() {setProjectModal(null);},
+    phasesFor,
+    openPhases(id) {setPhasesFor(id);},
+    closePhases() {setPhasesFor(null);},
     async createProject(data) {
       try {
         const p = await Backend.createProject(data);
@@ -4820,8 +5135,8 @@ function App() {
 
     openDetail(id) {setDetailId(id);setNotifOpen(false);setProfileOpen(false);},
     closeDetail() {setDetailId(null);},
-    openCreate(pid) {setCreateProjectId(typeof pid === 'string' ? pid : null);setCreateOpen(true);},
-    createProjectId,
+    openCreate(pid, phaseId) {setCreateProjectId(typeof pid === 'string' ? pid : null);setCreatePhaseId(typeof phaseId === 'string' ? phaseId : null);setCreateOpen(true);},
+    createProjectId, createPhaseId,
     openEdit(id) {setDetailId(null);setEditId(id);},
     openInvite() {setInviteOpen(true);},
     openMember(uid) {setMemberId(uid);},
@@ -5023,6 +5338,7 @@ function App() {
       {completeId && <CompleteModal store={store} />}
       {detailId && <TaskDetail store={store} />}
       {projectModal && <ProjectModal store={store} />}
+      {phasesFor && <PhasesModal store={store} projectId={phasesFor} />}
       {profileOpen && <ProfileModal store={store} onClose={() => setProfileOpen(false)} onLogout={logout} />}
       {memberId && <MemberModal store={store} uid={memberId} onClose={() => setMemberId(null)} />}
       {inviteOpen && <InviteModal store={store} onClose={() => setInviteOpen(false)} />}
