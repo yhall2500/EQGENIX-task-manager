@@ -2755,11 +2755,15 @@ function taskAction(task, me) {
 function TaskCard({ task, store }) {
   const me = store.me;
   const action = taskAction(task, me);
-  const due = dueLabel(task.due);
+  const completed = task.status === 'completed';
+  const rawDue = dueLabel(task.due);
+  const due = completed
+    ? { state: 'done', text: task.due ? 'Due ' + new Date(task.due).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'No due date' }
+    : rawDue;
   const claimer = userById(task.claimedBy);
   const doer = userById(task.completedBy);
   const assignee = task.assignedTo ? userById(task.assignedTo) : null;
-  const overdue = due.state === 'overdue' && task.status !== 'completed';
+  const overdue = rawDue.state === 'overdue' && !completed;
 
   const onAction = (e) => {
     e.stopPropagation();
@@ -2850,9 +2854,13 @@ function BoardView({ store }) {
 function ListRow({ task, store }) {
   const me = store.me;
   const action = taskAction(task, me);
-  const due = dueLabel(task.due);
+  const completed = task.status === 'completed';
+  const rawDue = dueLabel(task.due);
+  const due = completed
+    ? { state: 'done', text: task.due ? new Date(task.due).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'No due date' }
+    : rawDue;
   const who = userById(task.completedBy) || userById(task.claimedBy);
-  const overdue = due.state === 'overdue' && task.status !== 'completed';
+  const overdue = rawDue.state === 'overdue' && !completed;
   const onAction = (e) => {
     e.stopPropagation();
     if (action.key === 'claim') store.claim(task.id);
@@ -4307,7 +4315,9 @@ function TaskDetail({ store }) {
   const [confirmDel, setConfirmDel] = useState(false);
   if (!task) return null;
   const me = store.me;
-  const due = dueLabel(task.due);
+  const completed = task.status === 'completed';
+  const rawDue = dueLabel(task.due);
+  const due = completed ? { ...rawDue, state: 'done' } : rawDue;
   const action = taskAction(task, me);
   const creator = userById(task.createdBy);
   const isCreator = task.createdBy === me.id;
