@@ -272,6 +272,10 @@ h1,h2,h3{margin:0;}
 .tf-seg button{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;font-size:12px;font-weight:600;color:var(--ink-2);transition:.13s;}
 .tf-seg button:hover{color:var(--ink);}
 .tf-seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);}
+.tf-worknow-projgroups{display:flex;flex-direction:column;gap:22px;}
+.tf-worknow-projhead{display:flex;align-items:center;gap:9px;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--border);}
+.tf-worknow-projhead h3{font-size:14px;font-weight:700;color:var(--ink);margin:0;}
+.tf-worknow-projhead .tf-proj-dot{width:10px;height:10px;border-radius:50%;flex:none;}
 .tf-drag{position:relative;min-width:0;}
 .tf-drag-handle{position:absolute;top:8px;right:8px;z-index:4;display:flex;align-items:center;justify-content:center;
   width:30px;height:30px;border-radius:8px;color:var(--ink-3);background:var(--surface);border:1px solid var(--border);
@@ -3092,6 +3096,20 @@ function WorkingNowSection({ store, items, meId }) {
   const gridRef = useRef(null);
 
   const dueSorted = items.slice().sort((a, b) => dueVal(a) - dueVal(b));
+  // group by project (used by the "Project" mode) — projects in list order, "No project" last
+  const projects = store.projects || [];
+  const projGroups = (() => {
+    const byId = new Map();
+    dueSorted.forEach(t => {
+      const key = t.projectId && projects.some(p => p.id === t.projectId) ? t.projectId : '__none';
+      if (!byId.has(key)) byId.set(key, []);
+      byId.get(key).push(t);
+    });
+    const ordered = [];
+    projects.forEach(p => { if (byId.has(p.id)) ordered.push({ project: p, tasks: byId.get(p.id) }); });
+    if (byId.has('__none')) ordered.push({ project: null, tasks: byId.get('__none') });
+    return ordered;
+  })();
   let display = dueSorted;
   if (mode === 'manual') {
     const ranking = liveIds || order;
@@ -3173,11 +3191,29 @@ function WorkingNowSection({ store, items, meId }) {
         {items.length > 1 && (
           <div className="tf-seg">
             <button className={mode === 'due' ? 'on' : ''} onClick={() => pickMode('due')}><Icon name="clock" size={13} stroke={2} />Due date</button>
+            <button className={mode === 'project' ? 'on' : ''} onClick={() => pickMode('project')}><Icon name="folder" size={13} stroke={2} />Project</button>
             <button className={mode === 'manual' ? 'on' : ''} onClick={() => pickMode('manual')}><Icon name="grip" size={14} stroke={2} />Manual</button>
           </div>
         )}
       </div>
-      {items.length ? (
+      {mode === 'project' ? (
+        items.length ? (
+          <div className="tf-worknow-projgroups">
+            {projGroups.map(g => (
+              <div key={g.project ? g.project.id : '__none'} className="tf-worknow-projgroup">
+                <div className="tf-worknow-projhead">
+                  <span className="tf-proj-dot" style={g.project ? { background: g.project.color || 'var(--primary)' } : { background: 'var(--ink-3)' }}></span>
+                  <h3>{g.project ? g.project.name : 'No project'}</h3>
+                  <span className="tf-col-count">{g.tasks.length}</span>
+                </div>
+                <div className="tf-my-grid">
+                  {g.tasks.map(t => <TaskCard key={t.id} task={t} store={store} />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="tf-my-empty">You haven’t claimed anything yet — grab a task from the board.</p>
+      ) : items.length ? (
         <div className="tf-my-grid" ref={gridRef}>
           {display.map(t => mode === 'manual' ? (
             <div key={t.id} data-id={t.id}
