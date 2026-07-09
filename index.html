@@ -879,6 +879,35 @@ a.tf-proof-file:hover{border-color:var(--primary);color:var(--primary);}
   background:var(--primary-soft);padding:2px 8px 2px 6px;border-radius:99px;line-height:1;}
 .tf-phase-tag.detail{font-size:11.5px;padding:4px 10px 4px 8px;}
 
+/* ---- multi-select / bulk move ---- */
+.tf-card.is-selectable{cursor:pointer;position:relative;padding-left:44px;transition:box-shadow .13s,border-color .13s,background .13s;}
+.tf-card.is-selectable:hover{border-color:var(--ink-3);}
+.tf-card.is-selected{border-color:var(--proj,var(--primary));background:color-mix(in srgb,var(--proj,var(--primary)) 6%,var(--surface));
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--proj,var(--primary)) 30%,transparent);}
+.tf-card-check{position:absolute;top:16px;left:14px;width:20px;height:20px;border-radius:6px;border:1.8px solid var(--border-2);
+  background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;transition:.12s;}
+.tf-card.is-selectable:hover .tf-card-check{border-color:var(--ink-3);}
+.tf-card-check.on{background:var(--proj,var(--primary));border-color:var(--proj,var(--primary));}
+
+.tf-bulkbar{position:sticky;bottom:16px;margin:16px 24px 6px;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:10px 12px 10px 18px;background:var(--ink);color:#fff;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.28);}
+.tf-bulkbar-left{display:flex;align-items:center;gap:12px;font-size:13px;}
+.tf-bulkbar-count{min-width:26px;height:26px;padding:0 8px;border-radius:99px;background:rgba(255,255,255,.16);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.tf-bulkbar-label{font-weight:600;color:rgba(255,255,255,.85);}
+.tf-bulkbar-link{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.72);text-decoration:underline;text-underline-offset:2px;transition:.12s;}
+.tf-bulkbar-link:hover{color:#fff;}
+.tf-bulk-move{position:relative;}
+.tf-bulk-menu{position:absolute;bottom:calc(100% + 8px);right:0;min-width:200px;background:var(--surface);border:1px solid var(--border-2);
+  border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.22);padding:6px;z-index:30;}
+.tf-bulk-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;text-align:left;transition:.1s;}
+.tf-bulk-menu-item:hover{background:var(--primary-soft);}
+.tf-bulk-menu-num{width:22px;height:22px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;font-weight:800;background:var(--primary-soft);color:var(--primary-deep);}
+.tf-bulk-menu-item.muted .tf-bulk-menu-num{background:var(--surface-2);color:var(--ink-3);}
+.tf-bulk-menu-name{font-size:13.5px;font-weight:600;color:var(--ink);}
+.tf-bulk-menu-sep{height:1px;background:var(--border);margin:5px 4px;}
+
 .tf-phasebar{display:flex;align-items:center;gap:12px;padding:2px 24px 16px;}
 .tf-phasebar-scroll{flex:1;min-width:0;display:flex;align-items:center;gap:10px;overflow-x:auto;padding-bottom:3px;}
 .tf-phase-all{flex:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:11px;font-size:13px;
@@ -2864,7 +2893,7 @@ function taskAction(task, me) {
 }
 
 // ---------- task card ----------
-function TaskCard({ task, store }) {
+function TaskCard({ task, store, selectable, selected, onToggleSelect }) {
   const me = store.me;
   const action = taskAction(task, me);
   const completed = task.status === 'completed';
@@ -2886,6 +2915,26 @@ function TaskCard({ task, store }) {
     else if (action.key === 'review') store.openDetail(task.id);
     else store.openDetail(task.id);
   };
+
+  if (selectable) {
+    return (
+      <article className={'tf-card is-selectable' + (selected ? ' is-selected' : '') + (overdue ? ' is-overdue' : '')}
+        onClick={() => onToggleSelect(task.id)}>
+        <span className={'tf-card-check' + (selected ? ' on' : '')}>{selected && <Icon name="check" size={13} stroke={3} />}</span>
+        <div className="tf-card-top">
+          <PriorityTag priority={task.priority} />
+          <DeptTag dept={task.dept} />
+          {phase && <span className="tf-phase-tag"><Icon name="flag" size={10} stroke={2.4} />{phase.name}</span>}
+        </div>
+        <h3 className="tf-card-title">{task.title}</h3>
+        <p className="tf-card-desc">{task.desc}</p>
+        <div className="tf-card-meta">
+          <span className={'tf-due ' + due.state}><Icon name="clock" size={13} stroke={2} />{due.text}</span>
+          <span className="tf-est"><Icon name="sparkle" size={12} stroke={2} />{task.estimate}</span>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className={'tf-card' + (overdue ? ' is-overdue' : '')} onClick={() => store.openDetail(task.id)}>
@@ -3540,6 +3589,17 @@ function ProjectDetailView({ store, project }) {
   const [sel, setSel] = useState('all'); // 'all' | phaseId | 'none'
   const cur = phases.length ? currentPhase(project, store.tasks) : null;
 
+  // ---- multi-select (bulk move tasks between phases) ----
+  const [picking, setPicking] = useState(false);   // selection mode on/off
+  const [chosen, setChosen] = useState(() => new Set());
+  const [moveOpen, setMoveOpen] = useState(false);
+  const togglePick = (id) => setChosen(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const exitPick = () => { setPicking(false); setChosen(new Set()); setMoveOpen(false); };
+  const moveChosen = (phaseId) => {
+    store.moveTasksToPhase([...chosen], phaseId);
+    exitPick();
+  };
+
   // tasks in scope for the board, honouring the selected phase
   const scoped = sel === 'all' ? s.tasks
     : sel === 'none' ? s.tasks.filter(t => !t.phaseId || !phases.some(p => p.id === t.phaseId))
@@ -3547,6 +3607,7 @@ function ProjectDetailView({ store, project }) {
   const byStatus = (st) => scoped.filter(t => t.status === st).slice().sort((a, b) => taskComparator('due')(a, b));
   const unphased = s.tasks.filter(t => !t.phaseId || !phases.some(p => p.id === t.phaseId));
   const newTaskPhase = (sel !== 'all' && sel !== 'none') ? sel : (cur ? cur.phase.id : (phases[0] && phases[0].id));
+  const selectAllScoped = () => setChosen(new Set(scoped.map(t => t.id)));
 
   return (
     <div className="tf-proj-detail" style={{ '--proj': color }}>
@@ -3561,6 +3622,11 @@ function ProjectDetailView({ store, project }) {
           {due && <span className={'tf-proj-due chip ' + due.state}><Icon name="calendar" size={14} stroke={2} />{due.full || new Date(project.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
           {isManager && <button className="tf-icon-btn" title="Edit project" onClick={() => store.openProjectModal(project.id)}><Icon name="edit" size={17} /></button>}
           {isManager && <button className="tf-icon-btn danger" title="Delete project" onClick={() => store.openProjectModal(project.id, true)}><Icon name="trash" size={17} /></button>}
+          {isManager && phases.length > 0 && s.total > 0 && (
+            picking
+              ? <Button variant="ghost" size="sm" onClick={exitPick}>Cancel</Button>
+              : <Button variant="ghost" size="sm" icon="check" onClick={() => setPicking(true)}>Select</Button>
+          )}
           <Button variant="primary" size="sm" icon="plus" onClick={() => store.openCreate(project.id, newTaskPhase)}>New task</Button>
         </div>
       </div>
@@ -3648,11 +3714,45 @@ function ProjectDetailView({ store, project }) {
                 </header>
                 <div className="tf-col-body">
                   {items.length === 0 ? <div className="tf-col-empty">Nothing here</div>
-                    : items.map(t => <TaskCard key={t.id} task={t} store={store} />)}
+                    : items.map(t => <TaskCard key={t.id} task={t} store={store}
+                        selectable={picking} selected={chosen.has(t.id)} onToggleSelect={togglePick} />)}
                 </div>
               </section>
             );
           })}
+        </div>
+      )}
+
+      {picking && (
+        <div className="tf-bulkbar">
+          <div className="tf-bulkbar-left">
+            <span className="tf-bulkbar-count">{chosen.size}</span>
+            <span className="tf-bulkbar-label">{chosen.size === 1 ? 'task' : 'tasks'} selected</span>
+            <button className="tf-bulkbar-link" onClick={selectAllScoped}>Select all {sel === 'all' ? '' : 'shown '}({scoped.length})</button>
+            {chosen.size > 0 && <button className="tf-bulkbar-link" onClick={() => setChosen(new Set())}>Clear</button>}
+          </div>
+          <div className="tf-bulkbar-right">
+            <div className="tf-bulk-move">
+              <Button variant="primary" size="sm" icon="flag" disabled={chosen.size === 0} onClick={() => setMoveOpen(v => !v)}>
+                Move to phase<Icon name="chevronDown" size={14} stroke={2.4} style={{ marginLeft: 2, transform: moveOpen ? 'rotate(180deg)' : 'none' }} />
+              </Button>
+              {moveOpen && chosen.size > 0 && (
+                <div className="tf-bulk-menu">
+                  {phases.map((ph, i) => (
+                    <button key={ph.id} className="tf-bulk-menu-item" onClick={() => moveChosen(ph.id)}>
+                      <span className="tf-bulk-menu-num">{i + 1}</span>
+                      <span className="tf-bulk-menu-name">{ph.name}</span>
+                    </button>
+                  ))}
+                  <div className="tf-bulk-menu-sep"></div>
+                  <button className="tf-bulk-menu-item muted" onClick={() => moveChosen(null)}>
+                    <span className="tf-bulk-menu-num"><Icon name="inbox" size={13} stroke={2} /></span>
+                    <span className="tf-bulk-menu-name">Unassigned</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -5067,6 +5167,19 @@ function App() {
       setEditId(null);
       flash(`Updated “${truncate(data.title || cur.title)}”`, 'edit');
       if (data.assignedTo && data.assignedTo !== cur.assignedTo) notify(data.assignedTo, 'assign', `${me.name.split(' ')[0]} assigned you “${data.title || cur.title}”`, id);
+    },
+    moveTasksToPhase(ids, phaseId) {
+      const set = new Set(ids);
+      const affected = tasks.filter((x) => set.has(x.id));
+      if (!affected.length) return;
+      affected.forEach((cur) => {
+        const activity = [...cur.activity, { type: 'edited', by: meId, at: new Date() }];
+        patchTask(cur.id, { ...cur, phaseId: phaseId || null, activity }, { phaseId: phaseId || null, activity });
+      });
+      const proj = affected[0].projectId ? projects.find((p) => p.id === affected[0].projectId) : null;
+      const ph = proj && proj.phases ? proj.phases.find((p) => p.id === phaseId) : null;
+      const dest = ph ? `“${ph.name}”` : 'Unassigned';
+      flash(`Moved ${affected.length} task${affected.length > 1 ? 's' : ''} to ${dest}`, 'flag', 'edit');
     },
     async deleteTask(id) {
       const cur = tasks.find((x) => x.id === id);
